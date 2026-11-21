@@ -4,7 +4,7 @@
 - 适用代码：commit `c532d23` 及其后的 P0 修复、包名调整、构建模式改造
 - 前置阅读：`AGENT.md`（约束入口）→ `rules/`（规范）→ `docs/`（决策记录）
 
-> **本文档的定位**：描述系统**当前实际结构**与**已确认的设计取向**，不重复 `rules/` 里的行为规范，也不替代决策记录（`docs/2026-11-21-*.md`）。凡未经用户拍板的内容一律标注「设计建议（待确认）」。
+> **本文档的定位**：描述系统**当前实际结构**与**已确认的设计取向**，不重复 `rules/` 里的行为规范，也不替代决策记录（`docs/decisions/`、`docs/reviews/`）。凡未经用户拍板的内容一律标注「设计建议（待确认）」。
 
 ---
 
@@ -101,7 +101,7 @@ dsh 进程
 | `packages/ui` | `dsh-scriptwriting-ui` | Web Client 节点与流式展示 | 空（TODO），且缺客户端入口 |
 | `packages/bundle` | `dsh-scriptwriting-platform` | 组合包：patch 层 + `apply()` 装配 | 空（TODO） |
 
-**命名注意**：目录名 `store-local` 与包名 `dsh-scriptwriting-store` 不一致，是 2026-11-21 包名调整的显式取舍（只改标识、不改路径），见 `docs/2026-11-21-包名调整-store.md`。
+**命名注意**：目录名 `store-local` 与包名 `dsh-scriptwriting-store` 不一致，是 2026-11-21 包名调整的显式取舍（只改标识、不改路径），见 `docs/decisions/2026-11-21-包名调整-store.md`。
 
 ### 3.2 依赖方向（目标态）
 
@@ -151,7 +151,7 @@ dsh 进程
 | Consumer（facility） | `@deepseek-ai/dsh-storage-domain` | `ctx.storageDomain.open(spec)` |
 | Consumer（业务） | `dsh-scriptwriting-store` + `dsh-scriptwriting-tools` | 声明 `DomainSpec`，经 `ctx.tools` 暴露给模型 |
 
-**结论**：本项目**没有** Service Provider。任何「store-local 是 Provider」的表述都已过期（见 `docs/2026-11-21-存储后端与store-local定位.md`）。
+**结论**：本项目**没有** Service Provider。任何「store-local 是 Provider」的表述都已过期（见 `docs/decisions/2026-11-21-存储后端与store-local定位.md`）。
 
 ### 4.2 存储 seam 的公开 API（查证自源码）
 
@@ -404,7 +404,7 @@ dsh --profile demo
 
 ### 11.1 已修（P0，2026-11-21）
 
-依赖版本范围、`engines.dsh`、构建产出、`exports` / `types`、编译开关、`nodenext` 解析、TS 工具链、跨包引用、`.gitignore`。详见 `docs/2026-11-21-架构评审-骨架阶段.md` §2。
+依赖版本范围、`engines.dsh`、构建产出、`exports` / `types`、编译开关、`nodenext` 解析、TS 工具链、跨包引用、`.gitignore`。详见 `docs/reviews/2026-11-21-架构评审-骨架阶段.md` §2。
 
 ### 11.2 待拍板
 

@@ -1,6 +1,6 @@
 # dsh-scriptwriting-store
 
-剧本领域声明包（薄封装）。**不实现数据库**——复用 harness 已内置的 SQLite storage seam。
+剧本领域声明包（薄封装）。**不实现数据库，也不是 Service Provider**——持久化由 harness 的 `@deepseek-ai/dsh-storage-sqlite` 承担，本包只声明领域 spec。
 
 ## 分层（依据 `github-projects/deepseek-harness/docs/subsystems/storage.zh.md`）
 

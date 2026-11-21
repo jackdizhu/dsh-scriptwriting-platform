@@ -21,8 +21,9 @@ description: AI Agent 在本仓库的开发工作流规则。用于约束执行�
 
 ## 3. 决策记录：一决策一记录
 
-- 每个已确认的架构决策回写本仓库 `docs/YYYY-MM-DD-<主题>.md`，模板见 `docs/dsh-plugin-development-guide.md` 第 8 节。
-- 状态机：`proposed → accepted → superseded`；记录背景、选项取舍、结论、依据、验证方式。
+- 每个已确认的架构决策回写 `docs/decisions/YYYY-MM-DD-<主题>.md`（目录分区与写入门槛见 `docs/README.md`），模板见 `docs/dsh-plugin-development-guide.md` 第 8 节。
+- 状态机：`proposed → accepted → superseded`；记录背景、选项取舍、结论、依据、验证方式。被替代时不改正文，只在头部加 `superseded-by`。
+- 只描述现状的内容写进 `docs/architecture.md`，不新建文件；执行过程写进 `.workbuddy` 日志。
 - 标注建议 vs 已确认：未放行的映射一律写"设计建议（待确认）"，不得写成事实。
 - 设计理由放决策记录，不放代码注释或正文文档；历史只留在记录与 commit 中。
 

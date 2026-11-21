@@ -55,7 +55,7 @@ description: dsh-scriptwriting-platform 项目 AI Agent 入口指令。任何 Ag
 
 - **先确认，后执行**：每个阶段先产出方案 / 对照表 / 拆分清单，收到明确放行后再进入下一阶段。未经确认不得直接写业务代码或改动既有结构。
 - **阶段推进**：功能 → 扩展点映射 → 插件拆分 → 最小骨架跑通 → 能力填充 → 验证交付。每轮确认一个决策。
-- **一决策一记录**：每个已确认的架构决策回写本项目 `docs/` 下的决策记录（模板见 `docs/dsh-plugin-development-guide.md` 第 8 节）。
+- **一决策一记录**：每个已确认的架构决策回写 `docs/decisions/`（写入门槛与文件规范见 `docs/README.md`，模板见 `docs/dsh-plugin-development-guide.md` 第 8 节）。只描述现状的内容写进 `docs/architecture.md`，不新建文件。
 - **输出证据化**：结论必须引用具体文件路径、行号、命令输出或 commit；只报告实际运行过的命令与结果，不虚构、不隐瞒失败。
 - **检查纪律**：只跑与改动相关的检查，不默认全量、不重复已通过的检查。
 
@@ -113,7 +113,10 @@ description: dsh-scriptwriting-platform 项目 AI Agent 入口指令。任何 Ag
 | `rules/plugin-package.md` | 插件包规范 | 设计/开发/审查插件 |
 | `rules/privacy-security.md` | 隐私安全规范 | 涉敏任务，最高优先级 |
 | `rules/delivery.md` | 交付验收规范 | 提交、发版、收尾 |
+| `docs/README.md` | docs 索引与写作规则：目录分区、写入门槛、文件规范 | 要写/找文档时 |
 | `docs/architecture.md` | 系统架构总览：运行时模型、包结构与依赖方向、数据架构（DomainSpec）、构建与装配 | 需要理解整体结构时 |
+| `docs/decisions/` | 决策记录（一决策一文件，accepted/superseded） | 追溯「为什么这么定」 |
+| `docs/reviews/` | 评审记录（时间切片，不更新） | 查看某次评审的问题与结论 |
 | `docs/dsh-plugin-development-guide.md` | 自包含执行手册（含功能→扩展点→拆分表、代码模板、平台功能映射） | 进入实现阶段 |
 | `github-projects/deepseek-harness/docs/AGENTS.md` | Harness 文档导航总表 | 需要深查 Harness 文档时 |
 | `github-projects/deepseek-harness/docs/cookbook/extension-cookbook.zh.md` | 功能→机制映射表 | 做扩展点映射时 |

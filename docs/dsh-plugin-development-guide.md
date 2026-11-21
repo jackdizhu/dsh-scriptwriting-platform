@@ -510,7 +510,7 @@ export function apply(ctx: Context) {
 
 ```
 dsh-scriptwriting-core          Service Definition：领域类型 + ctx 键声明
-dsh-scriptwriting-store         Service Provider：本地持久化实现
+dsh-scriptwriting-store         领域 spec 声明（Provider 由 harness dsh-storage-sqlite 担任）
 dsh-scriptwriting-tools         Consumer：面向模型的读写工具
 dsh-scriptwriting-ui            UI 插件：Web Client 节点 + 流式展示
 dsh-scriptwriting-platform      组合包：cordis.patch.yml 组装上述插件
@@ -578,7 +578,7 @@ pnpm run build && pnpm run hygiene
 
 ## 8. 决策记录模板
 
-在 `docs/` 下按 `YYYY-MM-DD-<主题>.md` 创建，内容：
+在 `docs/decisions/` 下按 `YYYY-MM-DD-<主题>.md` 创建（目录分区与写入门槛见 `docs/README.md`），内容：
 
 ```markdown
 # <决策主题>
