@@ -218,7 +218,11 @@ interface KvTable<K, V> {
 
 **领域维度（仍待拍板）**：单作品域内，草稿、大纲/章节、世界地图、人物关系、时间线、物体能力是各一份 `DomainSpec` 还是合并为一份多 `tables`。D4 在「每作品一域」下倾向**单 spec 多 tables**（跨领域引用在同一写入链内一致），但该项仍需独立决策，不由 D4 代替。
 
-**遗留待确认**（D4 明确不覆盖）：当前作品状态在 Node/浏览器两侧的同步机制（候选 `ctx` 服务 + `dsh-client-store` 桥接，或事件驱动）；作品删除时的 unit 清理时机；同时打开的 domain 数上限。
+**运行时约束（已定，见 `docs/decisions/2026-11-21-多作品运行时约束.md`，closure D4 三项遗留）**：
+
+- **状态同步**：权威状态只在 Node 半（`activeWorkId` + 内容域句柄）；Node `ctx.provide('scriptwritingWorks', service)` + `@Remote` 暴露查询/命令 API，浏览器只发命令 + 查状态 + 渲染，不写权威状态（单向数据流，排除 `dsh-client-store` 双向桥接）。真源：gateway 经 `ctx.reflect.props` 自动发现带 `typertRemote` 的 service（`api/gateway/src/index.ts:378-388`），树外插件可行。
+- **作品删除 = 软删**：`works` 加 `deletedAt` 标记、从列表过滤，不清空/销毁 `sw_<id>` 数据；与领域 spec「只加不改」一致。
+- **同开 domain 数上限 = 1**：注册表域常驻不计入；任一时刻最多一个 `sw_<id>` open，切换严格 `close → open → 更新 activeWorkId`。
 
 ### 4.5 一致性模型
 
@@ -242,7 +246,7 @@ interface KvTable<K, V> {
 
 | 平台功能 | 扩展点 | 归属包 | 待确认 |
 |---|---|---|---|
-| 作品管理（新建/列表/切换/重命名/删除） | `tools` + 注册表域 + 左栏/主列入口 | core / store / tools / ui | D4 已定数据模型；当前作品状态同步机制待确认 |
+| 作品管理（新建/列表/切换/重命名/删除） | `tools` + 注册表域 + 左栏/主列入口 + `ctx` 服务 `@Remote` API | core / store / tools / ui | D4 数据模型 + 运行时约束均已定（软删、单向同步、单活跃域） |
 | 草稿生成 | `ctx.tools.register()`（必要时 `ctx.llm` adapter） | tools | 复用现有 DeepSeek adapter 还是自建 |
 | 大纲 / 章节大纲 | tools + 领域 spec | tools / store | 单一文档 or 分章节实体；是否要版本历史 |
 | 世界地图 | tools + Web Client 节点 | tools / ui | 节点-边结构是否复用图模型 |
@@ -426,7 +430,7 @@ dsh --profile demo
 | 4 | 领域 schema 演进策略 | 只加不改 + 版本单调 + 正文 `per-record`（建议） | 决定用户资产可迁移性 |
 | 5 | 测试归属 | 根 `tests/` vs 包级 `tests/` | 与 `rules/typescript.md`「测试放包级」冲突一处 |
 
-> 这些决策的执行顺序与阶段划分见 `docs/plans/2026-11-21-implementation-steps.md`（阶段 0 已放行）；该计划另有 D1/D2/D3 三个前置决策（UI 承载位置、客户端构建链、静态数据来源），以及 D4（多作品数据模型，见 `docs/decisions/2026-11-21-多作品数据模型.md`）。
+> 这些决策的执行顺序与阶段划分见 `docs/plans/2026-11-21-implementation-steps.md`（阶段 0 已放行）；该计划另有 D1/D2/D3 三个前置决策（UI 承载位置、客户端构建链、静态数据来源）、D4（多作品数据模型）与 D5（多作品运行时约束：状态同步/软删/单活跃域），分别见 `docs/decisions/2026-11-21-多作品数据模型.md`、`docs/decisions/2026-11-21-多作品运行时约束.md`。
 
 ### 11.3 已知技术债
 
