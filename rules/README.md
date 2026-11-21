@@ -15,6 +15,8 @@ description: dsh-scriptwriting-platform 规则索引。任何 AI Agent 在本仓
 |---|---|
 | 任何任务开始 | 本页 + `agent-workflow.md` |
 | 改 TS/JS 代码 | `typescript.md` |
+| 涉及前端 UI（页面、组件、样式、交互、客户端视图） | 本页 + `skill-usage.md`，并先调用前端技能 |
+| 涉及后端代码（Node half、`ctx` 服务、tools/store 服务端逻辑） | 本页 + `skill-usage.md`，并先调用后端技能 |
 | 开发/审查 dsh 插件 | `plugin-package.md` |
 | 涉及凭据、用户数据、日志、外部输入、命令执行 | `privacy-security.md` |
 | 提交、发版、写文档 | 追加本目录下的 `delivery.md` |
@@ -26,6 +28,7 @@ description: dsh-scriptwriting-platform 规则索引。任何 AI Agent 在本仓
 - `plugin-package.md` — dsh 独立插件包规范：Cordis 模型、插件形态、生命周期、seam 三角色、manifest、patch、配置。
 - `privacy-security.md` — 隐私与安全规范：最小权限、凭据管理、脱敏、不可信输入、命令与插件审查、供应链。
 - `delivery.md` — 交付与验收规范：检查纪律、DoD 清单、git 提交。
+- `skill-usage.md` — 技能调用强制规范：前端 UI 必调 `frontend-engineering`（前端工程），后端代码必调 `backend-engineering`（后端工程）；含项目内前后端判定口径。
 
 ## 事实来源优先级
 

@@ -1,7 +1,7 @@
 # 实施步骤
 
-- 版本：1.6（2026-11-21）
-- 状态：**阶段 0 已放行、阶段 1 已完成、阶段 1.5 已完成**（D1/D2/D3 用户拍板，见 `docs/decisions/2026-11-21-{UI入口与承载位置,客户端构建链,静态数据来源}.md`）；**D4 多作品数据模型已拍板**（见 `docs/decisions/2026-11-21-多作品数据模型.md`）；**D5 多作品运行时约束已拍板**（状态同步 = Node `ctx` 服务 API + 浏览器单向展示、删除 = 软删、同开域上限 = 1，见 `docs/decisions/2026-11-21-多作品运行时约束.md`）。阶段 1.5 已落地完整 UI 侧功能（作品工作台 + mock service，见 §3.13）；阶段 2 起按多作品模型推进。本文件是执行计划，不是决策本身。
+- 版本：1.8（2026-11-21）
+- 状态：**阶段 0 已放行、阶段 1 已完成、阶段 1.5 已完成**（D1/D2/D3 用户拍板，见 `docs/decisions/2026-11-21-{UI入口与承载位置,客户端构建链,静态数据来源}.md`）；**D4 多作品数据模型已拍板**（见 `docs/decisions/2026-11-21-多作品数据模型.md`）；**D5 多作品运行时约束已拍板**（状态同步 = Node `ctx` 服务 API + 浏览器单向展示、删除 = 软删、同开域上限 = 1，见 `docs/decisions/2026-11-21-多作品运行时约束.md`）。阶段 1.5 已落地完整 UI 侧功能（作品工作台 + mock service，见 §3.13）；**D7 UI 界面结构设计（前端工程版）已拍板**（见 `docs/decisions/2026-11-21-UI界面结构设计.md`，详细设计见 §3.15；D6 已废弃并 superseded，代码待放行）；阶段 2 起按多作品模型推进。本文件是执行计划，不是决策本身。
 - 前置阅读：`AGENT.md` → `rules/agent-workflow.md` → `docs/architecture.md`
 
 > **本文档的定位**：把 `docs/architecture.md` 描述的「目标态」翻译成**可逐步执行、可验证**的动作序列。凡架构文档标注「设计建议（待确认）」的条目，这里同样不当作既成事实，一律标 `待确认`。
@@ -31,6 +31,7 @@
 阶段 1  UI 静态部分（已完成）
    │        └─ 产出：可在 dsh Web GUI 里点开的三块静态面板
    │        └─ D4 新增待办 §3.13：作品列表/新建/切换入口（仍用 mock）
+   │        └─ D7 新增待办 §3.15：多页 UI 结构（前端工程版；D6 已废弃，详细设计已出）
    ▼
 阶段 2  core：领域类型 + 错误类 + ctx 键（含 Work / WorkId）
    │
@@ -56,6 +57,7 @@
 | 0 | 敲定 3 个阻塞项 | — | — | 用户对 §2 三项逐条答复 |
 | **1** | **UI 静态部分可点开、可看** | `ui`（+`bundle` 一行 patch） | 阶段 0 | §3.11 验收清单全绿（**已完成**，作品入口补作 §3.13） |
 | 1.5 | 完整 UI 侧功能：作品工作台 + mock service 接口层 | `ui` | 1 + D4/D5 | 作品列表/新建/切换/重命名/软删可用，三视图按当前作品联动，tab kind 不变（**已完成**） |
+| 1.6 | UI 结构重构：我的作品 + 作品详情 tabs + 工程化组件 | `ui` | 1.5 + D7 | §3.15 详细设计已出（D7 / 前端工程版）；代码待用户放行，按 P0–P4 执行后验收 |
 | 2 | 领域类型与错误契约（含 `Work`/`WorkId`） | `core` | 阶段 0 + D4/D5 | `pnpm typecheck` 通过，类型被 3、4 引用 |
 | 3 | DomainSpec 声明：作品注册域 + 内容域模板（软删字段） | `store` | 阶段 2 + D4/D5 | `open()` 成功，坏记录行为符合 spec |
 | 4 | 模型可读写工具 + 作品管理工具 + `ctx` 服务 `@Remote` API | `tools` | 阶段 2 + D4/D5 | 工具在真实会话中可调用，README 三字段填全 |
@@ -723,6 +725,70 @@ D4（作品注册表 + 每作品一域）+ D5（单向同步 / 软删 / 单活�
 
 **为什么现在做**：完整 UI 是纯浏览器层、无上游依赖，可立即落地；接口层提前到位让阶段 5 的替换收敛到一行，验收面大幅缩小。此阶段不改变阶段 2/3/4 的任何产出。
 
+### 3.14 阶段 1.6：D6 版 UI 结构设计（已废弃）
+
+> 本节依据 `ui-design-system` 生成，用户已于 2026-11-21 废弃并改选 `frontend-engineering`（前端工程）；保留仅作追溯，**不得执行**。现行设计见 §3.15 与 D7。
+
+D6 曾拍板「我的作品 → 作品详情 tabs【内容视图、作品概览】」，三视图沿用右栏三个固定 tab kind；决策理由与设计令牌见 `docs/decisions/2026-11-21-UI页面结构与设计系统.md`（状态 `superseded`）。本阶段只改 UI 结构，不改 slot 注册、不改 `WorkbenchService`、不接真实数据。
+
+| 项 | 内容 |
+|---|---|
+| 目标 | 信息层级从「一页聚合」变为「列表 → 详情 tabs」；组件按 `app/features/shared/services` 四层组织；建立可复用的设计令牌与组件 |
+| 路由 | `route = { page: 'works' } | { page: 'detail', workId, tab: 'content' | 'overview' }`；UI-local state，不写 service |
+| 页面 | 我的作品（搜索/排序/卡片/新建/软删）；作品概览（统计卡/元信息/危险区）；内容视图（三视图 chips + 右栏联动提示） |
+| 分层 | `app/` 壳与 tabs 容器；`features/works/` 作品页；`features/views/` 三面板（由 `panels/` 迁入）；`shared/ui/` 与 `shared/tokens.ts`；服务层文件保留原位 |
+| 设计系统 | 8pt 间距、6/8/12 圆角、四级字号、单一 accent `#3370ff`、shell CSS 变量跟随主题、150–200ms transform/opacity 微交互 |
+| 交互 | tabs 用 `role=tablist/tab/tabpanel` + 方向键；删除二次确认 + Escape 取消；窄屏单列；服务不可用降级为空/错误态 |
+| 数据流 | 读 `useWorkbench()` 快照；写 `getService().<命令>()`；不乐观更新；组件不 import mock、不直接改快照 |
+| 不变 | `index.ts` 注册、`PANEL_ID`、右栏三 tab kind、D5 软删/单活跃域、D2 构建链（无 CSS 管线、无新依赖） |
+
+执行顺序（每步可独立静态验证，全部在同一阶段内完成）：
+
+| 顺序 | 动作 | 涉及文件 | 判据 |
+|---|---|---|---|
+| P0 | 建 `shared/tokens.ts` 与 `shared/ui/` 基础组件 | 新增，`styles.ts` 不再被页面直接引用 | 组件覆盖默认/hover/active/focus/disabled/loading；无 CSS 文件 |
+| P1 | 建 `app/` 路由壳与「我的作品」页 | `PlatformPage.tsx` 变薄为挂载点 | 列表/新建/重命名/软删沿用现有 service；空态可见 |
+| P2 | 建作品详情 tabs 与作品概览 | `features/works/WorkDetail.tsx`、`OverviewTab.tsx` | tabs 可切换；统计来自 `view` 快照；危险操作有确认 |
+| P3 | 迁入三视图面板并接内容视图 | `features/views/` 三个面板、`ContentViewTab.tsx` | `charts/` 三个 option 纯函数不变；点击仍调 `openView(kind)` 走右栏 |
+| P4 | 文档与静态验证 | 本文件、D6、`packages/ui/README.md` | `pnpm typecheck` + `pnpm build`；产物契约 process.env=0 / ^import=0 / load=1 / NOTICE=1；`features/` 不 import mock |
+
+| 退出条件 | 判据 |
+|---|---|
+| 结构 | `index.ts` 与改动前逐行一致；右栏注册仍为 `scriptwriting-worldmap` / `relations` / `timeline` 三个 kind |
+| 行为 | 我的作品 → 详情 → tabs 切换 → 内容视图打开右栏 → 返回列表；切作品后右栏与概览同步 |
+| 数据 | 阶段 5 替换点仍是 `setService(new MockWorkbenchService())` 一处；`grep -r "mock/" packages/ui/src/client/features` 无命中 |
+| 验证 | 静态检查全绿；Agent 不运行 dsh/harness，桌面端交互由用户验收 |
+
+### 3.15 阶段 1.6：UI 界面结构设计（D7 / 前端工程版，待放行）
+
+用户已废弃 D6，改选 `frontend-engineering`（前端工程）作为前端技能、`backend-engineering`（后端工程）作为后端技能。新设计按技能的「子技能先选后读」流程产出：设计方向五问、`react-patterns` 状态归属、`frontend-patterns` 组件组合、`design-system` 最小令牌、`frontend-a11y` WCAG 2.2 AA、`click-path-audit` 点击路径副作用表。完整规格见 `docs/decisions/2026-11-21-UI界面结构设计.md`。
+
+| 项 | 内容 |
+|---|---|
+| 目标 | 把一页聚合改为「我的作品 → 作品详情 tabs【内容视图、作品概览】」；组件按 `app/features/shared/services` 四层组织 |
+| 设计方向 | dense / quiet / scannable 工具型；第一屏就是可用工作流；不引新依赖与新视觉系统 |
+| 状态归属 | `route` 用 `PlatformApp` 的 `useState`；领域数据只读 `useWorkbench()`（`useSyncExternalStore`）；搜索/编辑/pending 就近组件；不引入全局 store |
+| 组件模式 | Tabs 复合组件（`Tabs.List`/`Trigger`/`Panel` + Context）；Card 组合式 `children`；统一 `ViewState` 四态；`FormField` 处理 label/错误关联 |
+| 点击路径 | 逐条走查 D7 的触点表：打开作品异步竞态、软删后详情回退、返回列表焦点回退、内部路由不写 layout/sidebarRight |
+| 无障碍 | 语义 button/a、`role=tablist/tab/tabpanel` 与方向键、表单 `aria-describedby`/`role=alert`、弹窗焦点恢复、`aria-live`、`prefers-reduced-motion` |
+| 令牌与性能 | 仅抽取已用令牌（4/8/12/16/24、6/8/12、20/14/13/12、`#3370ff`、shell 变量）；稳定 key；不虚拟列表；`useMemo` 仅用于图表 option |
+| 不变 | `index.ts` slot 注册、`PANEL_ID`、右栏三 tab kind、D5 软删/单活跃域、D2 lazy-CJS 构建链；不 import mock/core/store/tools |
+
+| 顺序 | 动作 | 判据 |
+|---|---|---|
+| P0 | 建 `shared/tokens.ts` 与复合组件（Card / Tabs / ViewState / FormField / ConfirmDialog） | 无 CSS 文件、无新依赖；组件支持 a11y 清单 |
+| P1 | 建 `app/` 路由壳与「我的作品」页 | 列表/新建/重命名/软删走现有 service；空态可见 |
+| P2 | 建作品详情 tabs 与作品概览 | tabs 受 `route.tab` 控制；统计来自 `view` 快照；危险操作有确认 |
+| P3 | 迁入三视图面板、接内容视图、走查点击路径 | `charts/` 不变；点击 chips 仍调 `openView(kind)` 走右栏；D7 触点表逐条无冲突 |
+| P4 | 文档与静态验证 | D6 标 `superseded`、D7/§3.15/README 同步；`pnpm typecheck` + `pnpm build`；产物 process.env=0 / ^import=0 / load=1 / NOTICE=1 |
+
+| 退出条件 | 判据 |
+|---|---|
+| 结构 | `index.ts` 与改动前逐行一致；右栏仍为 `scriptwriting-worldmap` / `relations` / `timeline` 三个 kind |
+| 行为 | 列表 → 详情 → tabs → 内容视图打开右栏 → 返回列表；软删当前作品后详情自动回退列表 |
+| 数据 | 阶段 5 替换点仍是 `setService(new MockWorkbenchService())` 一处；`features/` 不 import mock |
+| 验证 | 静态检查全绿；点击路径表与无障碍清单逐条通过；Agent 不运行 dsh/harness，桌面端由用户验收 |
+
 ---
 
 ## 4. 阶段 2：core 领域类型与错误契约
@@ -826,7 +892,7 @@ dsh --profile demo
 
 ## 11. 与决策记录的关系
 
-D1/D2/D3（阶段 0 前置）、D4（多作品数据模型）、D5（多作品运行时约束）均已拍板，各自按 `docs/decisions/YYYY-MM-DD-<主题>.md` 落一份决策记录（模板见 `docs/dsh-plugin-development-guide.md` 第 8 节），状态为 `accepted`。本文件只描述**怎么做**，不承载决策理由。
+D1/D2/D3（阶段 0 前置）、D4（多作品数据模型）、D5（多作品运行时约束）、D7（UI 界面结构设计，前端工程版）均已拍板，各自按 `docs/decisions/YYYY-MM-DD-<主题>.md` 落一份决策记录（模板见 `docs/dsh-plugin-development-guide.md` 第 8 节），状态为 `accepted`；D6 已 `superseded`，仅作追溯。本文件只描述**怎么做**，不承载决策理由；D7 的详细规格见 §3.15。
 
 `docs/architecture.md` §11.2 的五项待拍板中，与本计划直接相关的三项是：包切分方向（影响阶段 2 目录）、领域 spec 拆分粒度（阻塞阶段 3）、测试归属（阻塞阶段 7）。D4 的三项遗留已由 D5 全部 closure：状态同步 = Node `ctx` 服务 `@Remote` API + 浏览器单向展示（含使用场景说明）、删除 = 软删、同开内容域上限 = 1；D5 未覆盖的回收站/彻底删除/导出时机仍留待后续。
 
@@ -843,3 +909,5 @@ D1/D2/D3（阶段 0 前置）、D4（多作品数据模型）、D5（多作品�
 | 2026-11-21 | 1.4：D4 多作品数据模型拍板（作品注册表 + 每作品一域）；新增 §3.13 阶段 1 作品入口静态扩展、阶段 1.5；阶段 2–5 产出按 `Work`/作品注册域/作品管理工具/按作品取数对齐；记录三项 D4 遗留待确认 |
 | 2026-11-21 | 1.5：D5 多作品运行时约束拍板（状态同步 = Node `ctx` 服务 `@Remote` API + 浏览器单向展示、删除 = 软删、同开内容域上限 = 1）；D4 三项遗留 closure；阶段 2–5 前置与产出同步 D5，阶段 5 决策项改为已定输入 |
 | 2026-11-21 | 1.6：阶段 1.5 实施完成——完整 UI 侧功能落地（作品工作台 + `WorkbenchService` 接口层 + 三份 mock 作品 + 三视图联动），按 D5 单向数据流；§3.13 重写为已实施并记录对原 `workState.ts` 桩的有意升级；阶段 5 替换为 `setService()` 一行 |
+| 2026-11-21 | 1.7：D6 UI 页面结构与设计系统拍板（我的作品 → 作品详情 tabs【内容视图、作品概览】，三视图沿用右栏 tab，`UI设计系统` 技能启用）；新增阶段 1.6 与 §3.14 详细设计及 P0–P4 执行顺序，代码待放行 |
+| 2026-11-21 | 1.8：用户废弃 D6 结构设计，改选 `frontend-engineering`（前端工程）/`backend-engineering`（后端工程）；调用前端工程技能重出 D7 `2026-11-21-UI界面结构设计.md`，§3.14 标废弃、新增 §3.15（状态归属、复合组件、点击路径审计、WCAG 2.2 AA、最小令牌），规则与索引同步，代码仍待放行 |
