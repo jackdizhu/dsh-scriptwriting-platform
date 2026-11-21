@@ -1,5 +1,5 @@
 /**
- * 主列「创建平台」页（main 的 keyed 注册，key = PANEL_ID）。
+ * 主列「创作平台」页（main 的 keyed 注册，key = PANEL_ID）。
  * 职责：三视图入口卡（点卡片切右栏 tab）、当前视图摘要、收起右侧面板按钮。
  * 不是空占位——β 入口下点击左栏行会替换主列，此页须承担真实职责。
  */
@@ -23,7 +23,7 @@ const CARDS = [
 export function PlatformPage({ openView, collapse, activeKind }: PropsRuntime<'main'> & PlatformPageInjected) {
   return (
     <div data-sw="platform-page">
-      <h2>创建平台</h2>
+      <h2>创作平台</h2>
       <p>选择一视图，在右侧面板查看静态示意。</p>
       <div data-sw="platform-cards">
         {CARDS.map(card => (

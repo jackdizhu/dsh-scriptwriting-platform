@@ -1,5 +1,5 @@
 /**
- * 左栏「创建平台」行的图标（sidebar.panellist）。
+ * 左栏「创作平台」行的图标（sidebar.panellist）。
  * owner props 只有 size 与 active（契约限定），两态用 active 调透明度。
  */
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'

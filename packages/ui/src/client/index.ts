@@ -1,5 +1,5 @@
 /**
- * 浏览器半：注册三个右栏 tab 类型、一个主列页面、左栏「创建平台」行。
+ * 浏览器半：注册三个右栏 tab 类型、一个主列页面、左栏「创作平台」行。
  * 决策 D1（β）：左栏行 id = main key = PANEL_ID，二者必须成对注册。
  */
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
@@ -71,7 +71,7 @@ export function apply(ctx: ClientContext): void {
     name: 'sidebar.panellist',
     id: PANEL_ID,
     order: 20,
-    label: () => '创建平台',
+    label: () => '创作平台',
   }, PlatformIcon))
 
   // 进入该页时把右栏带到我们的视图；已停在我们某个视图上则不动。

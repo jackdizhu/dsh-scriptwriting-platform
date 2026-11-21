@@ -98,7 +98,7 @@ dsh Web GUI（一个会话）
 │  · 会话 A     │  模型回复                       │ │ 引导 文件 地图 关系…│ │
 │  · 会话 B     │  工具调用卡片                    │ ├────────────────────┤ │
 │              │                                │ │ ③ 正文坑位          │ │
-│ ⑤ 创建平台 ←  │  ⑥ 选中时：主列换成平台页         │ │  （面板渲染在这里）  │ │
+│ ⑤ 创作平台 ←  │  ⑥ 选中时：主列换成平台页         │ │  （面板渲染在这里）  │ │
 │ 插件         │                                │ └────────────────────┘ │
 └──────────────┴────────────────────────────────┴────────────────────────┘
    ↑ 左栏插件按钮区（本次新增一行）    本次新增的三个 chip ↑  ↑ 本体
@@ -151,7 +151,7 @@ dsh Web GUI（一个会话）
 | ③ | 右侧栏正文 | `ui-sidebar-right`（`sidebar.right.pane.tab`，keyed） | `ctx.slots.register({ name, key: <tab id> })` | **用** |
 | ③′ | tab 标题（浮出/分栏时的标签） | `ui-sidebar-right`（`sidebar.right.pane.tab.title`，keyed） | 同上，`name` 换成 title 坑位 | **用** |
 | ④ | 引导页入口卡 | `ui-sidebar-right` | 同 ②，附 `guide: { order, title() }` | **用** |
-| ⑤ | 左侧栏插件按钮区的一行 | `ui-sidebar`（`sidebar.panellist`，list） | `ctx.slots.register({ name, id, order, label })` | **用**（「创建平台」行，见 §2.1.2） |
+| ⑤ | 左侧栏插件按钮区的一行 | `ui-sidebar`（`sidebar.panellist`，list） | `ctx.slots.register({ name, id, order, label })` | **用**（「创作平台」行，见 §2.1.2） |
 | ⑥ | 主列页面 | `ui-layout`（`main`，keyed by panel id） | `ctx.slots.register({ name: 'main', key })` | **用**（β 必需，与 ⑤ 成对） |
 | ⑦ | 左侧栏新建会话行（hoc） | `ui-sidebar`（`sidebar.session.action`） | `ctx.slots.register({ name })` | 不用（α 方案已弃） |
 
@@ -165,9 +165,9 @@ dsh Web GUI（一个会话）
 
 关键区分：**② 是「类型定义」，③/③′ 是「该类型的渲染实现」**，两者用同一个 `id` 关联；`kind` 只用于 `openTab(kind)` 与地址路由，不出现在 slot key 里。
 
-#### 2.1.2 左侧栏入口：创建平台按钮（新增需求）
+#### 2.1.2 左侧栏入口：创作平台按钮（新增需求）
 
-**需求**：左侧栏「工作区上方、插件按钮区」增加一个「创建平台」入口，点一下打开右侧面板，再点一下关闭。
+**需求**：左侧栏「工作区上方、插件按钮区」增加一个「创作平台」入口，点一下打开右侧面板，再点一下关闭。
 
 **机制约束（查证自源码，决定了它不能简单地做成那个区域的一行）**：
 
@@ -189,9 +189,9 @@ dsh Web GUI（一个会话）
 **β 的两条已知代价**（来自 `selectPanel` 的幂等语义，已接受）：
 
 1. **再点同一行不会关闭右栏**——壳层只把 `activePanelId` 赋成同一个值（`ui-layout/src/client/stores.ts` 94–97 行），不产生第二次状态变化，我们也拿不到该点击。「关闭」由两处承担：主列页面内的「收起右侧面板」按钮、右栏自带收起控件。
-2. 点击会**替换主列内容**（对话流被「创建平台」页取代），返回对话走壳层自己的返回控件。
+2. 点击会**替换主列内容**（对话流被「创作平台」页取代），返回对话走壳层自己的返回控件。
 
-因此「创建平台」页不是空占位，它要承担真实职责：三块视图的入口卡、当前视图摘要、「收起右侧面板」按钮。
+因此「创作平台」页不是空占位，它要承担真实职责：三块视图的入口卡、当前视图摘要、「收起右侧面板」按钮。
 
 **注册配方（两处必须成对，缺一个 `selectPanel` 就抛错）**：
 
@@ -208,7 +208,7 @@ ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({
   name: 'sidebar.panellist',
   id: PANEL_ID,
   order: 20,
-  label: () => '创建平台',
+  label: () => '创作平台',
 }, PlatformIcon))
 ```
 
@@ -217,7 +217,7 @@ ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({
 **进入页面时的右栏行为**（不用点击钩子，改用状态观察）：
 
 ```ts
-// 进入「创建平台」页 → 展开右栏并聚焦上次的视图
+// 进入「创作平台」页 → 展开右栏并聚焦上次的视图
 ctx.effect(() => ctx.layout.panelInfo.subscribe(() => {
   if (ctx.layout.panelInfo.getSnapshot().activePanelId !== PANEL_ID) return
   if (ctx.sidebarRight.isExpanded()) return          // 已开就不打扰用户
@@ -228,12 +228,12 @@ ctx.effect(() => ctx.layout.panelInfo.subscribe(() => {
 - **不自动收起**：离开该页时不动右栏，避免抢用户已经做过的操作。
 - 记住上次 kind 用模块级变量即可；`openTab` 对同一 kind 是「地址即身份」，重复打开只聚焦已有 tab，不会叠加。
 - 图标用 `size`/`active` 两个 owner props 做两态（`sidebar.panellist` 的 owner props 只有这两个），不靠颜色区分。
-- 文案固定「创建平台」，阶段 6 再走 `ctx.locale`。
+- 文案固定「创作平台」，阶段 6 再走 `ctx.locale`。
 
 **验收（阶段 1 追加）**：
 
-- 左栏出现「创建平台」行，与「插件」同排、在工作区列表之上
-- 点击 → 主列显示创建平台页，右栏展开到上次视图（首次为世界地图）
+- 左栏出现「创作平台」行，与「插件」同排、在工作区列表之上
+- 点击 → 主列显示创作平台页，右栏展开到上次视图（首次为世界地图）
 - 再点同一行 → 主列不变、右栏**不关闭**（β 的预期行为，不是缺陷）
 - 点页面内「收起右侧面板」→ 右栏收起
 - 右栏开着「文件」时点击 → 切到我们的视图，不关闭右栏
@@ -310,7 +310,7 @@ packages/ui/
 │       ├── index.ts             # [新] 浏览器半入口：注册三个 tab 类型 + body + title
 │       ├── echarts.ts           # [新] echarts/core 按需注册（图表/组件/renderer 只 use 需要的）
 │       ├── entries/
-│       │   ├── PlatformIcon.tsx   # [新] 左栏「创建平台」行的图标（sidebar.panellist）
+│       │   ├── PlatformIcon.tsx   # [新] 左栏「创作平台」行的图标（sidebar.panellist）
 │       │   └── PlatformPage.tsx   # [新] 主列页面：三视图入口卡 + 收起右栏按钮（main keyed）
 │       ├── panels/
 │       │   ├── PanelShell.tsx   # [新] 共用外壳：标题栏 / 工具条 / 内容区 / 空态
@@ -569,7 +569,7 @@ export const inject = ['slots', 'sidebarRightTabs', 'sidebarRight', 'layout']
 let lastKind = 'scriptwriting-worldmap'
 
 /**
- * 浏览器半：注册三个侧栏 tab 类型、一个主列页面、以及左栏「创建平台」行。
+ * 浏览器半：注册三个侧栏 tab 类型、一个主列页面、以及左栏「创作平台」行。
  * @param ctx - 客户端根上下文。
  */
 export function apply(ctx: ClientContext): void {
@@ -598,7 +598,7 @@ export function apply(ctx: ClientContext): void {
     name: 'sidebar.panellist',
     id: PANEL_ID,
     order: 20,
-    label: () => '创建平台',
+    label: () => '创作平台',
   }, PlatformIcon))
 
   // 进入该页时把右栏带到我们的视图；已停在我们某个视图上则不动。
@@ -659,7 +659,7 @@ export function apply(ctx: ClientContext): void {
 | 10 | 三个 tab 连续开关各 5 次，看 DevTools Memory/Event Listeners | 无持续上涨；说明 `dispose()` 生效 |
 | 11 | 改一处内联色值，重新 `build:client`，不重启 dsh | 面板刷新（HMR 生效，说明 rev 派生正常） |
 | 12 | 从 patch 删掉 ui 行并重启 | 三个入口消失、无残留报错（注销干净） |
-| 13 | 点左栏「创建平台」行 | 主列切到创建平台页；右栏展开到上次视图（首次为世界地图） |
+| 13 | 点左栏「创作平台」行 | 主列切到创作平台页；右栏展开到上次视图（首次为世界地图） |
 | 14 | 再点同一行 | 主列不变、右栏**不关闭**（β 的预期行为，见 §2.1.2） |
 | 15 | 点页面内「收起右侧面板」→ 再点该行 | 右栏重新展开，且回到上次那个视图（不是跳回世界地图） |
 | 16 | 右栏先开着「文件」，再点该行 | 切到我们的视图，右栏不关 |
@@ -670,7 +670,7 @@ export function apply(ctx: ClientContext): void {
 ### 3.11 阶段 1 验收清单（DoD）
 
 - [ ] 三个 tab 类型可注册、可点开、可关闭，切换会话不报错
-- [ ] 左栏插件按钮区出现「创建平台」行，与「插件」同排、在工作区列表之上
+- [ ] 左栏插件按钮区出现「创作平台」行，与「插件」同排、在工作区列表之上
 - [ ] 该行（`sidebar.panellist`）与主列页面（`main`）成对注册，`selectPanel` 不抛错
 - [ ] 进入页面即把右栏带到我们的视图；页面内「收起右侧面板」可用
 - [ ] 侧栏折叠成 rail（56px）时该行降级为纯图标
@@ -713,7 +713,7 @@ D4（作品注册表 + 每作品一域，见 `docs/decisions/2026-11-21-多作�
 |---|---|
 | 目标 | 用户能新建作品、在作品列表间切换、看到当前作品名；三视图按当前作品显示不同的 mock 数据 |
 | 数据 | `src/client/mock/works.ts` 提供 2–3 份作品元数据 + 每份对应的 world/characters/events（沿用 D3 同形约定，标 `TODO(阶段 5)`） |
-| UI 落点 | 主列 `PlatformPage` 顶部加作品选择器（列表 + 新建 + 重命名入口）；左栏行 `sidebar.panellist` 仍为单个「创建平台」，不再为每个作品加行（避免行数随作品增长） |
+| UI 落点 | 主列 `PlatformPage` 顶部加作品选择器（列表 + 新建 + 重命名入口）；左栏行 `sidebar.panellist` 仍为单个「创作平台」，不再为每个作品加行（避免行数随作品增长） |
 | 状态 | 当前作品 id 由 `src/client/workState.ts` 在模块内存管理（静态阶段）；tab kind 固定不变，切换只换数据源——真源 `ui-sidebar-right/src/client/tab-registry.ts` 的 `register()` 无运行时 unregister |
 | 边界 | 不 import core/store/tools；不引入持久化；作品状态跨 Node/浏览器同步留到阶段 5 前另出决策记录（D4 遗留项） |
 | 验证 | 切换作品后三个视图 mock 数据变化、标题显示当前作品名；`pnpm -C packages/ui build` 产物仍满足 lazy-CJS 契约 |
@@ -836,6 +836,6 @@ D1/D2/D3（阶段 0 前置）与 D4（多作品数据模型）均已拍板，各
 |---|---|
 | 2026-11-21 | 初版：阶段划分、UI 静态部分逐步落地、三个阻塞决策点 |
 | 2026-11-21 | 1.1：§2.1.1 补承载位置图解与 slot 对照；图表实现改为 ECharts（主）+ ZRender（辅），去掉手绘 SVG 与 CSS 管线；补按需注册、zrender 去重、Apache NOTICE 与相应验证/风险项 |
-| 2026-11-21 | 1.2：新增 §2.1.2 左侧栏「创建平台」开关入口（⑥ `sidebar.session.action`）；补入口三态逻辑、验证 13–15、DoD 与两条风险 |
+| 2026-11-21 | 1.2：新增 §2.1.2 左侧栏「创作平台」开关入口（⑥ `sidebar.session.action`）；补入口三态逻辑、验证 13–15、DoD 与两条风险 |
 | 2026-11-21 | 1.3：左栏入口定为 β（`sidebar.panellist` 行 + `main` 主列面板），同步 §2.1.1/§2.1.2/§3.2/§3.8/§3.10/DoD/风险，并记录「重复点击不能关闭」的已知代价 |
 | 2026-11-21 | 1.4：D4 多作品数据模型拍板（作品注册表 + 每作品一域）；新增 §3.13 阶段 1 作品入口静态扩展、阶段 1.5；阶段 2–5 产出按 `Work`/作品注册域/作品管理工具/按作品取数对齐；记录三项 D4 遗留待确认 |

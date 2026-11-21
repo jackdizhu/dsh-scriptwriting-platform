@@ -11,8 +11,8 @@
 ## 承载位置（决策 D1，β）
 
 - 右侧栏三个 tab 类型：`scriptwriting-worldmap` / `scriptwriting-relations` / `scriptwriting-timeline`，带 guide 入口；
-- 左栏插件按钮区「创建平台」行（`sidebar.panellist`，id = `scriptwriting`）；
-- 主列页面「创建平台」（`main` keyed，key 同为 `scriptwriting`）——左栏行与主列页必须成对注册，否则 `selectPanel` 抛错；
+- 左栏插件按钮区「创作平台」行（`sidebar.panellist`，id = `scriptwriting`）；
+- 主列页面「创作平台」（`main` keyed，key 同为 `scriptwriting`）——左栏行与主列页必须成对注册，否则 `selectPanel` 抛错；
 - 已知代价：重复点左栏行不会关闭右栏（壳层 `selectPanel` 幂等）；主列被替换，返回对话用壳层控件。关闭右栏由主列页「收起右侧面板」按钮与右栏自带控件承担。
 
 ## 构建（决策 D2-A）
