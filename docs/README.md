@@ -27,6 +27,9 @@
 | `2026-11-21-项目代码目录大纲.md` | accepted | 包粒度 = 五包 pnpm workspace |
 | `2026-11-21-存储后端与store-local定位.md` | accepted | 后端 SQLite；`store-local` 改为领域 spec 薄封装，不自研 Provider |
 | `2026-11-21-包名调整-store.md` | accepted | 包名 `-store-local` → `-store`，目录名不变 |
+| `2026-11-21-UI入口与承载位置.md` | accepted | 承载位置 = 右侧栏 tab 类型；入口 = 左栏 `sidebar.panellist` 行 + `main` 主列面板（β），已知「重复点击不关闭」 |
+| `2026-11-21-客户端构建链.md` | accepted | D2 = 最小配置产出 lazy-CJS 契约；echarts 内联、不引 harness 预设、NOTICE 随 banner |
+| `2026-11-21-静态数据来源.md` | accepted | D3 = 内置 mock fixture，字段与未来 core 类型同形，阶段 5 替换 |
 
 ### 评审记录（`reviews/`）
 
@@ -38,7 +41,7 @@
 
 | 文件 | 状态 | 内容 |
 |---|---|---|
-| `implementation-steps.md` | 草案（**待放行**） | 阶段 0–7 的划分与退出条件；阶段 0 含 D1（UI 承载位置）/ D2（客户端构建链）/ D3（静态数据来源）三个阻塞决策；阶段 1 为 UI 静态部分（唯一无阻塞入口） |
+| `2026-11-21-implementation-steps.md` | v1.3（**阶段 0 已放行**，阶段 1 实施中） | 阶段 0–7 的划分与退出条件；D1/D2/D3 均已拍板（见上表三份决策记录）；阶段 1 为 UI 静态部分（当前实施） |
 
 > 计划不是决策：D1/D2/D3 拍板后各自落一份 `decisions/` 记录，本文件只保留「怎么做」。
 

@@ -10,24 +10,52 @@
       "types": "./lib/index.d.ts",
       "default": "./lib/index.js"
     },
+    "./client": {
+      "types": "./lib/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
     "./package.json": "./package.json"
   },
   "files": ["lib"],
   "license": "MIT",
   "engines": { "dsh": ">=0.2.2-0 <0.3.0" },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-sidebar-right",
+        "@deepseek-ai/dsh-client-ui-layout"
+      ]
+    }
+  },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.1.0",
     "dsh-scriptwriting-core": "workspace:^"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.1.0",
-    "dsh-scriptwriting-core": "workspace:^"
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-client-ui-sidebar": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-client-ui-sidebar-right": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-client-ui-layout": "0.2.2-rc.5",
+    "dsh-scriptwriting-core": "workspace:^",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "echarts": "^6.1.0",
+    "tsdown": "^0.22.2"
   },
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('lib',{recursive:true,force:true})\"",
-    "build": "node ../../scripts/tsc.mjs",
-    "build:dev": "node ../../scripts/tsc.mjs --mode=development",
+    "build": "node ../../scripts/tsc.mjs && tsc -p tsconfig.client.types.json && tsc -p tsconfig.client.json --noEmit && tsdown",
+    "build:dev": "node ../../scripts/tsc.mjs --mode=development && tsc -p tsconfig.client.types.json && tsc -p tsconfig.client.json --noEmit && tsdown",
     "dev": "node ../../scripts/tsc.mjs --watch",
-    "typecheck": "tsc --noEmit"
+    "build:client": "tsdown",
+    "dev:client": "tsdown --watch",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.client.json --noEmit"
   }
 }

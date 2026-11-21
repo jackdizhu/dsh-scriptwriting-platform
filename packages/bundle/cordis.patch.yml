@@ -1,3 +1,5 @@
 - insert:
     - id: scriptwriting-platform
       name: dsh-scriptwriting-platform
+    - id: scriptwriting-platform-ui
+      name: dsh-scriptwriting-ui
