@@ -1,0 +1,85 @@
+# Git 忽略规则
+# 依据：本仓库 AGENT.md §3 路径约定、rules/privacy-security.md §3/§7、
+#       github-projects/deepseek-harness/.gitignore（真源参考，仅取适用项）
+
+# ── 目录联接（本项目特有，最高优先）──────────────────────────
+# 指向工作区外的 deepseek-harness 仓库，只读参考，绝不能作为本仓库内容提交。
+# 现状核实：github-projects/deepseek-harness 为符号链接，git ls-files 计数 0。
+github-projects/
+
+# ── 凭据与密钥（privacy-security 红线，绝不入库）──────────────
+.env
+.env.*
+!.env.example
+
+# ── 依赖 ────────────────────────────────────────────────
+node_modules/
+.pnpm-store/
+.pnpm-debug.log*
+
+# ── 编译与构建产物 ────────────────────────────────────────
+# 树外插件按自身 tsconfig 产出；产物布局为遗留决策，先忽略标准目录。
+lib/
+dist/
+*.tsbuildinfo
+
+# ── Python（预留；参考 harness 真源 python/**/__pycache__ 等）──
+# 字节码缓存
+__pycache__/
+*.py[cod]
+*$py.class
+# 虚拟环境（不含裸 env/，避免误伤同名源码目录）
+.venv/
+venv/
+# 测试与类型检查缓存
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.tox/
+# 打包与分发
+build/
+*.egg-info/
+.eggs/
+wheels/
+pip-wheel-metadata/
+# 覆盖率（Python 工具）
+.coverage
+htmlcov/
+# 版本与工具
+.python-version
+
+# ── 日志与调试 ───────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ── 测试与覆盖率 ──────────────────────────────────────────
+coverage/
+.coverage-*
+
+# ── 运行时状态 ───────────────────────────────────────────
+# 参考 harness 后端的 storages / sessions；本平台 backend=sqlite。
+.storages/
+.sessions/
+.dsh-build/
+.artifacts/
+
+# ── 本机工作数据（AI 工作日志，不随源码交付）────────────────────
+.workbuddy/
+
+# ── 本地开发 overlay ──────────────────────────────────────
+# 开发用 cordis.yml 含本地绝对路径（手册 §4.1）；正式 patch 为 cordis.patch.yml，必须提交。
+cordis.yml
+
+# ── 临时文件 ─────────────────────────────────────────────
+.cache/
+tmp/
+*.tmp
+
+# ── 编辑器与操作系统 ───────────────────────────────────────
+.vscode/
+.idea
+.DS_Store
+Thumbs.db

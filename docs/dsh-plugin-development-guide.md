@@ -77,7 +77,7 @@ ACTIVE → UNLOADING → DISPOSED
 |---|---|---|
 | profile | 具名组装，存放于 `$DSH_HOME/profiles/<name>`，列出 bundles + 自己的 patch | `dsh.profile.bundles` |
 | bundle | 插件代码 + 一个配置层的分发格式 | `dsh.bundle.patch` |
-| patch | YAML 数组，按 `id` 插入或替换配置行 | — |
+| patch | YAML 数组：带 `id` 的补丁覆盖该行；`insert` 决定插入位置（无 id 追加末尾，有 id 插入该 group） | — |
 
 **层顺序**（后应用者按行胜出）：
 
@@ -263,7 +263,7 @@ pnpm dsh web --patch ./<你的插件目录>/cordis.yml
 
 ```yaml
 - insert:
-    - id: scriptwriting
+    - id: scriptwriting-platform
       name: dsh-scriptwriting-platform
 ```
 
@@ -271,7 +271,7 @@ pnpm dsh web --patch ./<你的插件目录>/cordis.yml
 
 ```sh
 dsh plugin --profile demo add ./dsh-scriptwriting-platform
-dsh --profile demo --dump-config   # 确认出现 scriptwriting 层
+dsh --profile demo --dump-config   # 确认出现 dsh-scriptwriting-platform 层（层内含 id: scriptwriting-platform 的行）
 dsh --profile demo
 ```
 
@@ -510,10 +510,10 @@ export function apply(ctx: Context) {
 
 ```
 dsh-scriptwriting-core          Service Definition：领域类型 + ctx 键声明
-dsh-scriptwriting-store-local   Service Provider：本地持久化实现
+dsh-scriptwriting-store         Service Provider：本地持久化实现
 dsh-scriptwriting-tools         Consumer：面向模型的读写工具
 dsh-scriptwriting-ui            UI 插件：Web Client 节点 + 流式展示
-dsh-scriptwriting-bundle        组合包：cordis.patch.yml 组装上述插件
+dsh-scriptwriting-platform      组合包：cordis.patch.yml 组装上述插件
 ```
 
 拆分判据仍是「角色是否独立演进」：若存储后端确定只有一种，可先合并 Definition + Provider，避免过度拆分。

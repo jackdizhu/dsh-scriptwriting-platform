@@ -113,6 +113,7 @@ description: dsh-scriptwriting-platform 项目 AI Agent 入口指令。任何 Ag
 | `rules/plugin-package.md` | 插件包规范 | 设计/开发/审查插件 |
 | `rules/privacy-security.md` | 隐私安全规范 | 涉敏任务，最高优先级 |
 | `rules/delivery.md` | 交付验收规范 | 提交、发版、收尾 |
+| `docs/architecture.md` | 系统架构总览：运行时模型、包结构与依赖方向、数据架构（DomainSpec）、构建与装配 | 需要理解整体结构时 |
 | `docs/dsh-plugin-development-guide.md` | 自包含执行手册（含功能→扩展点→拆分表、代码模板、平台功能映射） | 进入实现阶段 |
 | `github-projects/deepseek-harness/docs/AGENTS.md` | Harness 文档导航总表 | 需要深查 Harness 文档时 |
 | `github-projects/deepseek-harness/docs/cookbook/extension-cookbook.zh.md` | 功能→机制映射表 | 做扩展点映射时 |

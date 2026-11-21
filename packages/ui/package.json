@@ -1,0 +1,33 @@
+{
+  "name": "dsh-scriptwriting-ui",
+  "version": "0.1.0",
+  "description": "Web Client nodes and streaming display for the scriptwriting platform",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["lib"],
+  "license": "MIT",
+  "engines": { "dsh": ">=0.2.2-0 <0.3.0" },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.1.0",
+    "dsh-scriptwriting-core": "workspace:^"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.1.0",
+    "dsh-scriptwriting-core": "workspace:^"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('lib',{recursive:true,force:true})\"",
+    "build": "node ../../scripts/tsc.mjs",
+    "build:dev": "node ../../scripts/tsc.mjs --mode=development",
+    "dev": "node ../../scripts/tsc.mjs --watch",
+    "typecheck": "tsc --noEmit"
+  }
+}

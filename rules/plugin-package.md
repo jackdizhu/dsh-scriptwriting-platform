@@ -47,7 +47,8 @@ description: dsh 独立插件包开发规范。用于设计与审查本仓库的
 ## 6. 打包与组合（树外插件）
 
 - 组合包 manifest：`package.json` 中 `dsh.bundle.patch` 指向 patch 文件；profile manifest 为 `dsh.profile.bundles` 有序列表。两者互斥，缺一不可混。
-- patch 为 YAML 数组，按 `id` 插入或覆盖行；**替换整行 config 而非深合并**，覆盖时必须重述该行所有键。
+- patch 为 YAML 数组，`id` 是**行身份**而非注释：带 `id` 的补丁按 `id` 定位并覆盖该行的键（找不到只 warn 跳过；补丁里的 `name` 与现有行不符也跳过）；`insert` 不带 `id` 时追加到列表末尾，带 `id` 时表示插入到该 `id` 的 group 内（该行必须是 group）。**覆盖是整行 config 替换而非深合并**，必须重述该行所有键。
+- 每个被 insert 的行都要显式给**稳定** `id`：缺省时框架会生成随机 id，运行时改动按 id 回写将无法定位。`id` 一经发布即成为下游覆盖配置的契约，改名会导致静默失配。
 - 层顺序：profile bundles（按列表）→ profile 的 `cordis.patch.yml` → home 级 patch → 各 `--patch` overlay（按 argv）。
 - 需与宿主共享实例的 dsh 包同时放 `peerDependencies` 与 `devDependencies`（相同范围）；独立版本第三方依赖放 `dependencies`。
 - 声明 `engines.dsh` SemVer 范围，安装与启动会校验。

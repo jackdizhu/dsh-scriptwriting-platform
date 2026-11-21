@@ -1,0 +1,36 @@
+{
+  // 编译基线：树外 dsh 插件，产物由 Node ESM 直接加载（tsc 直出，不经打包器）。
+  // 与 harness 根 tsconfig 同源的严格度；差异是 module 用 nodenext 而非 bundler，
+  // 因为 Node 解析 ESM 时不支持无扩展名的相对导入。
+  "compilerOptions": {
+    "target": "es2024",
+    "lib": ["es2024"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noEmit": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "types": ["node"],
+    // 跨包引用用包名，开发期直接指向源码，避免依赖构建顺序。
+    "paths": {
+      "dsh-scriptwriting-core": ["./packages/core/src/index.ts"],
+      "dsh-scriptwriting-store": ["./packages/store-local/src/index.ts"],
+      "dsh-scriptwriting-tools": ["./packages/tools/src/index.ts"],
+      "dsh-scriptwriting-ui": ["./packages/ui/src/index.ts"],
+      "dsh-scriptwriting-platform": ["./packages/bundle/src/index.ts"]
+    }
+  }
+}

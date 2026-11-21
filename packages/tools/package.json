@@ -1,0 +1,37 @@
+{
+  "name": "dsh-scriptwriting-tools",
+  "version": "0.1.0",
+  "description": "Model-facing tools for the scriptwriting platform",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["lib"],
+  "license": "MIT",
+  "engines": { "dsh": ">=0.2.2-0 <0.3.0" },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.1.0",
+    "@deepseek-ai/dsh-tools": ">=0.2.2-0 <0.3.0",
+    "dsh-scriptwriting-core": "workspace:^",
+    "dsh-scriptwriting-store": "workspace:^"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.1.0",
+    "@deepseek-ai/dsh-tools": ">=0.2.2-0 <0.3.0",
+    "dsh-scriptwriting-core": "workspace:^",
+    "dsh-scriptwriting-store": "workspace:^"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('lib',{recursive:true,force:true})\"",
+    "build": "node ../../scripts/tsc.mjs",
+    "build:dev": "node ../../scripts/tsc.mjs --mode=development",
+    "dev": "node ../../scripts/tsc.mjs --watch",
+    "typecheck": "tsc --noEmit"
+  }
+}
