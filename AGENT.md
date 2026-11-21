@@ -117,6 +117,7 @@ description: dsh-scriptwriting-platform 项目 AI Agent 入口指令。任何 Ag
 | `docs/architecture.md` | 系统架构总览：运行时模型、包结构与依赖方向、数据架构（DomainSpec）、构建与装配 | 需要理解整体结构时 |
 | `docs/decisions/` | 决策记录（一决策一文件，accepted/superseded） | 追溯「为什么这么定」 |
 | `docs/reviews/` | 评审记录（时间切片，不更新） | 查看某次评审的问题与结论 |
+| `docs/plans/implementation-steps.md` | 分阶段执行计划：阶段划分、退出条件、验收清单（草案，待放行） | 要开工或排期时 |
 | `docs/dsh-plugin-development-guide.md` | 自包含执行手册（含功能→扩展点→拆分表、代码模板、平台功能映射） | 进入实现阶段 |
 | `github-projects/deepseek-harness/docs/AGENTS.md` | Harness 文档导航总表 | 需要深查 Harness 文档时 |
 | `github-projects/deepseek-harness/docs/cookbook/extension-cookbook.zh.md` | 功能→机制映射表 | 做扩展点映射时 |

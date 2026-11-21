@@ -416,6 +416,8 @@ dsh --profile demo
 | 4 | 领域 schema 演进策略 | 只加不改 + 版本单调 + 正文 `per-record`（建议） | 决定用户资产可迁移性 |
 | 5 | 测试归属 | 根 `tests/` vs 包级 `tests/` | 与 `rules/typescript.md`「测试放包级」冲突一处 |
 
+> 这些决策的执行顺序与阶段划分见 `docs/plans/implementation-steps.md`（草案，待放行）；该计划另有 D1/D2/D3 三个前置决策（UI 承载位置、客户端构建链、静态数据来源）。
+
 ### 11.3 已知技术债
 
 - `tools` 依赖 `store`（Consumer 依赖了非 Definition 的实现包）。
