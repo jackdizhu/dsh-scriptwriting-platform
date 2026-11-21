@@ -1,7 +1,7 @@
 # 实施步骤
 
-- 版本：1.3（2026-11-21）
-- 状态：**阶段 0 已放行**（D1/D2/D3 均用户拍板，见 `docs/decisions/2026-11-21-{UI入口与承载位置,客户端构建链,静态数据来源}.md`）；阶段 1 实施中。本文件是执行计划，不是决策本身。
+- 版本：1.4（2026-11-21）
+- 状态：**阶段 0 已放行、阶段 1 已完成**（D1/D2/D3 用户拍板，见 `docs/decisions/2026-11-21-{UI入口与承载位置,客户端构建链,静态数据来源}.md`）；**D4 多作品数据模型已拍板**（见 `docs/decisions/2026-11-21-多作品数据模型.md`），阶段 2 起按多作品模型推进；阶段 1 的作品入口扩展见 §3.13（待办）。本文件是执行计划，不是决策本身。
 - 前置阅读：`AGENT.md` → `rules/agent-workflow.md` → `docs/architecture.md`
 
 > **本文档的定位**：把 `docs/architecture.md` 描述的「目标态」翻译成**可逐步执行、可验证**的动作序列。凡架构文档标注「设计建议（待确认）」的条目，这里同样不当作既成事实，一律标 `待确认`。
@@ -28,19 +28,21 @@
 阶段 0  开工确认（3 个决策点）
    │
    ▼
-阶段 1  UI 静态部分  ◄── 本次重点，无上游依赖
+阶段 1  UI 静态部分（已完成）
    │        └─ 产出：可在 dsh Web GUI 里点开的三块静态面板
+   │        └─ D4 新增待办 §3.13：作品列表/新建/切换入口（仍用 mock）
    ▼
-阶段 2  core：领域类型 + 错误类 + ctx 键
+阶段 2  core：领域类型 + 错误类 + ctx 键（含 Work / WorkId）
    │
    ├──────────────┬──────────────┐
    ▼              ▼              ▼
 阶段 3 store   阶段 4 tools    （UI 继续做交互态，仍用 mock）
-DomainSpec     defineTool          │
+作品注册域     作品管理工具         │
++ 内容域模板   + 领域读写工具       │
    │              │                │
    └──────┬───────┘                │
           ▼                        ▼
-      阶段 5  真实数据接 UI（替换 mock）
+      阶段 5  真实数据接 UI（按当前作品取数，替换 mock）
           │
           ▼
       阶段 6  横切：审批 / 命令 / 后台任务 / 流式展示
@@ -52,11 +54,12 @@ DomainSpec     defineTool          │
 | 阶段 | 目标 | 产出包 | 前置 | 退出条件 |
 |---|---|---|---|---|
 | 0 | 敲定 3 个阻塞项 | — | — | 用户对 §2 三项逐条答复 |
-| **1** | **UI 静态部分可点开、可看** | `ui`（+`bundle` 一行 patch） | 阶段 0 | §3.11 验收清单全绿 |
-| 2 | 领域类型与错误契约 | `core` | 阶段 0 | `pnpm typecheck` 通过，类型被 3、4 引用 |
-| 3 | DomainSpec 声明 | `store` | 阶段 2 | `open()` 成功，坏记录行为符合 spec |
-| 4 | 模型可读写工具 | `tools` | 阶段 2 | 工具在真实会话中可调用，README 三字段填全 |
-| 5 | mock 换真实数据 | `ui` + `tools` | 3、4 | 面板数据来自领域存储，刷新不丢 |
+| **1** | **UI 静态部分可点开、可看** | `ui`（+`bundle` 一行 patch） | 阶段 0 | §3.11 验收清单全绿（**已完成**，作品入口补作 §3.13） |
+| 1.5 | 作品入口扩展（静态） | `ui` | 1 + D4 | 作品列表/新建/切换可用（mock 多份），tab kind 不变 |
+| 2 | 领域类型与错误契约（含 `Work`/`WorkId`） | `core` | 阶段 0 + D4 | `pnpm typecheck` 通过，类型被 3、4 引用 |
+| 3 | DomainSpec 声明：作品注册域 + 内容域模板 | `store` | 阶段 2 + D4 | `open()` 成功，坏记录行为符合 spec |
+| 4 | 模型可读写工具 + 作品管理工具 | `tools` | 阶段 2 + D4 | 工具在真实会话中可调用，README 三字段填全 |
+| 5 | mock 换真实数据（按当前作品取数） | `ui` + `tools` | 3、4 | 面板数据来自领域存储、切换作品数据随之变，刷新不丢 |
 | 6 | 审批、命令、后台、流式 | 新钩子包 / `ui` | 5 | 写操作需审批生效 |
 | 7 | 门禁补齐 | 全仓 | 1–6 | lint + test + REAL composition 可跑 |
 
@@ -702,14 +705,31 @@ export function apply(ctx: ClientContext): void {
 | 行 id 与 main key 不一致 | 行可点但主列空白 | 两处都用同一个 `PANEL_ID` 常量，不写字面量 |
 | 用户预期「再点关闭」落空 | 反馈「按钮关不掉」 | 在页面显眼处放「收起右侧面板」；文档与验收步骤 14 明确这是 β 的既有代价 |
 
+### 3.13 阶段 1 追加：多作品入口（D4，静态，仍用 mock）
+
+D4（作品注册表 + 每作品一域，见 `docs/decisions/2026-11-21-多作品数据模型.md`）要求平台支持多个作品。阶段 1 的静态实现此前是单作品假设，需补一层作品入口——**本小步仍用 mock 数据，不接存储**，避免阻塞在 core/store 之前。
+
+| 项 | 内容 |
+|---|---|
+| 目标 | 用户能新建作品、在作品列表间切换、看到当前作品名；三视图按当前作品显示不同的 mock 数据 |
+| 数据 | `src/client/mock/works.ts` 提供 2–3 份作品元数据 + 每份对应的 world/characters/events（沿用 D3 同形约定，标 `TODO(阶段 5)`） |
+| UI 落点 | 主列 `PlatformPage` 顶部加作品选择器（列表 + 新建 + 重命名入口）；左栏行 `sidebar.panellist` 仍为单个「创建平台」，不再为每个作品加行（避免行数随作品增长） |
+| 状态 | 当前作品 id 由 `src/client/workState.ts` 在模块内存管理（静态阶段）；tab kind 固定不变，切换只换数据源——真源 `ui-sidebar-right/src/client/tab-registry.ts` 的 `register()` 无运行时 unregister |
+| 边界 | 不 import core/store/tools；不引入持久化；作品状态跨 Node/浏览器同步留到阶段 5 前另出决策记录（D4 遗留项） |
+| 验证 | 切换作品后三个视图 mock 数据变化、标题显示当前作品名；`pnpm -C packages/ui build` 产物仍满足 lazy-CJS 契约 |
+| 退出 | 阶段 5 时 `workState.ts` 的 mock 切换替换为注册表域 + `activeWorkId` 同步，作品选择器保留 |
+
+**为什么现在做**：作品入口是纯 UI 层、无上游依赖，可立即落地；若拖到阶段 5，作品选择器与视图取数会同时改动，验收面翻倍。此小步不改变阶段 2/3/4 的任何产出，只让阶段 5 的替换点更清晰。
+
 ---
 
 ## 4. 阶段 2：core 领域类型与错误契约
 
 | 项 | 内容 |
 |---|---|
-| 目标 | 定下领域类型（草稿、大纲、地点、人物、关系、事件、能力）与统一错误类，供 store/tools/ui 共用 |
-| 产出 | `packages/core/src/{types,ids,errors}.ts`，`ctx` 键声明 |
+| 目标 | 定下领域类型（**`Work`/`WorkId`**、草稿、大纲、地点、人物、关系、事件、能力）与统一错误类，供 store/tools/ui 共用 |
+| 产出 | `packages/core/src/{types,ids,errors}.ts`，`ctx` 键声明（含当前作品服务键，具体同步机制待 D4 遗留决策） |
+| 已定输入 | D4：`Work` 是一等实体，`WorkId` 品牌类型；作品元数据 = `{ id, title, createdAt, updatedAt, order }` |
 | 关键决策 | 领域拆分粒度（架构文档 §4.4，待拍板项 3）：一域一 spec vs 单 spec 多 tables；本条**必须在写 schema 前拍板**，否则 store 返工 |
 | 验证 | `pnpm typecheck`；错误类通过「不解析消息、只比对 `code`」的断言 |
 | 退出 | 类型被阶段 3、4 实际 import 且无循环依赖 |
@@ -722,11 +742,12 @@ export function apply(ctx: ClientContext): void {
 
 | 项 | 内容 |
 |---|---|
-| 目标 | 声明领域 schema 并成功 `open()`，不自研持久化 |
-| 产出 | `packages/store-local/src/{specs,index}.ts` |
+| 目标 | 声明领域 schema 并成功 `open()`，不自研持久化；覆盖作品注册表域与每作品内容域 |
+| 产出 | `packages/store-local/src/{specs,index}.ts`：`worksSpec`（name `scriptwriting_works`，`works` 表 + `global.activeWorkId`）+ 内容域 spec 工厂（name `sw_<id>`，动态构造，须匹配 `UNIT_NAME_RE`） |
+| 已定输入 | D4：作品实体独立注册域；内容按作品分 unit；多个 domain 句柄用**同一个** `ctx.effect` 串行 disposer（架构 §4.6） |
 | 必须遵守 | 只加不改、`version` 单调、旧版本进 `compatibleVersions`、剧本正文用 `per-record` layout（架构文档 §4.3） |
-| 验证 | 起一个最小 cordis 配置，`ctx.storageDomain.open(spec)` 成功；写坏记录触发 `invalid-record`；`close()` 后重复 `close()` 不抛错 |
-| 退出 | 领域可读写、可重开，坏记录行为与 spec 一致 |
+| 验证 | 起一个最小 cordis 配置，`ctx.storageDomain.open(spec)` 成功；open 两个 `sw_<id>` 验证同名拒绝与隔离；写坏记录触发 `invalid-record`；`close()` 后重复 `close()` 不抛错 |
+| 退出 | 注册域与内容域可读写、可重开，坏记录行为与 spec 一致 |
 
 注意：`inject: ['storageDomain']` 且服务缺失时应停在 PENDING 而非 FAILED（架构文档 §2.2）。
 
@@ -736,8 +757,9 @@ export function apply(ctx: ClientContext): void {
 
 | 项 | 内容 |
 |---|---|
-| 目标 | 模型可调用的读写工具，按领域分组 |
-| 产出 | `packages/tools/src/tools/*.ts` + `index.ts` 注册 |
+| 目标 | 模型可调用的读写工具，按领域分组；**外加作品管理工具**（新建/列表/切换/重命名/删除） |
+| 产出 | `packages/tools/src/tools/{works,world,characters,events,...}.ts` + `index.ts` 注册 |
+| 已定输入 | D4：作品管理操作注册表域；领域读写工具操作当前作品的 `sw_<id>` 句柄，**工具参数不带作品 id**（当前句柄即当前作品） |
 | 关键约束 | 经 `ctx.storageDomain` 取句柄，**不 import `dsh-scriptwriting-store`**（修架构文档 §3.3 的 P1 偏差）；参数错误用 `ToolArgsError` |
 | 配置化 | 条目上限、超时等进 Config schema，不写 `DEFAULT_*` |
 | 验证 | 真实会话里工具可被调用；越界参数返回 `INVALID_ARGS`；README 三字段（What the model sees / Token effect / KV Cache effect）填全，否则过不了 `rules/delivery.md` 门禁 |
@@ -749,11 +771,11 @@ export function apply(ctx: ClientContext): void {
 
 | 项 | 内容 |
 |---|---|
-| 目标 | 三块面板读领域存储，刷新不丢 |
-| 做法 | 保留 `PanelShell` 与视图组件，把 `mock/*` 换成 store 查询；数据获取放客户端 service 或 Remote，**不**在组件里直接取上下文 |
-| 决策 | 客户端如何拿到数据：Remote 命名空间 vs 会话投影（架构文档 §5「观察生成过程」待确认项） |
-| 验证 | 修改数据后刷新面板一致；断网/服务缺失时降级到空态而非崩溃 |
-| 退出 | mock 目录删除，`grep -r "mock/" packages/ui/src` 无命中 |
+| 目标 | 三块面板读领域存储，刷新不丢；**切换作品后数据随之变化，当前作品持久化** |
+| 做法 | 保留 `PanelShell` 与视图组件，把 `mock/*` 换成 store 查询；数据获取放客户端 service 或 Remote，**不**在组件里直接取上下文；§3.13 的作品选择器接注册表域，`workState.ts` 的 mock 切换替换为 `activeWorkId` 同步 |
+| 决策 | ① 客户端如何拿到数据：Remote 命名空间 vs 会话投影（架构文档 §5「观察生成过程」待确认项）；② **当前作品状态在 Node/浏览器两侧如何同步**（D4 遗留项，须先出决策记录：`ctx` 服务 + `dsh-client-store` 桥接 vs 事件驱动） |
+| 验证 | 修改数据后刷新面板一致；切换作品后三视图变化且刷新保留当前作品；断网/服务缺失时降级到空态而非崩溃 |
+| 退出 | mock 目录删除，`grep -r "mock/" packages/ui/src` 无命中；作品切换端到端可用 |
 
 ---
 
@@ -802,9 +824,9 @@ dsh --profile demo
 
 ## 11. 与决策记录的关系
 
-阶段 0 的 D1/D2/D3 一旦拍板，各自按 `docs/decisions/YYYY-MM-DD-<主题>.md` 落一份决策记录（模板见 `docs/dsh-plugin-development-guide.md` 第 8 节），状态从 `proposed` 转 `accepted`。本文件只描述**怎么做**，不承载决策理由。
+D1/D2/D3（阶段 0 前置）与 D4（多作品数据模型）均已拍板，各自按 `docs/decisions/YYYY-MM-DD-<主题>.md` 落一份决策记录（模板见 `docs/dsh-plugin-development-guide.md` 第 8 节），状态为 `accepted`。本文件只描述**怎么做**，不承载决策理由。
 
-`docs/architecture.md` §11.2 的五项待拍板中，与本计划直接相关的三项是：包切分方向（影响阶段 2 目录）、领域 spec 拆分粒度（阻塞阶段 3）、测试归属（阻塞阶段 7）。
+`docs/architecture.md` §11.2 的五项待拍板中，与本计划直接相关的三项是：包切分方向（影响阶段 2 目录）、领域 spec 拆分粒度（阻塞阶段 3）、测试归属（阻塞阶段 7）。D4 另有三项遗留待确认，必须在阶段 5 之前出决策记录：当前作品状态跨端同步、作品删除的 unit 清理时机、同时打开的 domain 数上限。
 
 ---
 
@@ -816,3 +838,4 @@ dsh --profile demo
 | 2026-11-21 | 1.1：§2.1.1 补承载位置图解与 slot 对照；图表实现改为 ECharts（主）+ ZRender（辅），去掉手绘 SVG 与 CSS 管线；补按需注册、zrender 去重、Apache NOTICE 与相应验证/风险项 |
 | 2026-11-21 | 1.2：新增 §2.1.2 左侧栏「创建平台」开关入口（⑥ `sidebar.session.action`）；补入口三态逻辑、验证 13–15、DoD 与两条风险 |
 | 2026-11-21 | 1.3：左栏入口定为 β（`sidebar.panellist` 行 + `main` 主列面板），同步 §2.1.1/§2.1.2/§3.2/§3.8/§3.10/DoD/风险，并记录「重复点击不能关闭」的已知代价 |
+| 2026-11-21 | 1.4：D4 多作品数据模型拍板（作品注册表 + 每作品一域）；新增 §3.13 阶段 1 作品入口静态扩展、阶段 1.5；阶段 2–5 产出按 `Work`/作品注册域/作品管理工具/按作品取数对齐；记录三项 D4 遗留待确认 |

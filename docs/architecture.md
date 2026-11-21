@@ -207,9 +207,18 @@ interface KvTable<K, V> {
 
 > 上述三条为**设计建议（待确认）**，尚未落为决策记录。
 
-### 4.4 领域划分（待拍板）
+### 4.4 领域划分（部分已定：多作品模型）
 
-候选领域：草稿、大纲/章节、世界地图、人物关系、时间线、物体能力。未决：五个领域各一份 `DomainSpec`，还是合并为一份多 `tables`。合并的好处是跨领域引用（人物 ↔ 时间线）在同一写入链内一致；拆开的好处是独立版本与独立开关。
+**作品维度（已定，D4）**：平台支持多个作品，作品是一等公民，采用「作品注册表 + 每作品一域」（见 `docs/decisions/2026-11-21-多作品数据模型.md`）：
+
+- 注册表域 `scriptwriting_works`：`works` 表存 `{ id, title, createdAt, updatedAt, order }`（`per-record` layout），`global` 存 `activeWorkId`；
+- 内容域模板：一份 DomainSpec，按作品动态构造 name `sw_<id>`（`<id>` 须匹配 `UNIT_NAME_RE = /^[a-z][a-z0-9_]*$/`），域内 tables 承载地点/路线/人物/关系/事件，后续加大纲/草稿；
+- 切换作品 = `close(旧域)` → `open(新域)` → 更新 `activeWorkId`；右栏 tab kind 固定，切换只换数据；
+- 作品间数据物理隔离在不同 unit，工具 API 不带作品参数，当前句柄即当前作品。
+
+**领域维度（仍待拍板）**：单作品域内，草稿、大纲/章节、世界地图、人物关系、时间线、物体能力是各一份 `DomainSpec` 还是合并为一份多 `tables`。D4 在「每作品一域」下倾向**单 spec 多 tables**（跨领域引用在同一写入链内一致），但该项仍需独立决策，不由 D4 代替。
+
+**遗留待确认**（D4 明确不覆盖）：当前作品状态在 Node/浏览器两侧的同步机制（候选 `ctx` 服务 + `dsh-client-store` 桥接，或事件驱动）；作品删除时的 unit 清理时机；同时打开的 domain 数上限。
 
 ### 4.5 一致性模型
 
@@ -233,6 +242,7 @@ interface KvTable<K, V> {
 
 | 平台功能 | 扩展点 | 归属包 | 待确认 |
 |---|---|---|---|
+| 作品管理（新建/列表/切换/重命名/删除） | `tools` + 注册表域 + 左栏/主列入口 | core / store / tools / ui | D4 已定数据模型；当前作品状态同步机制待确认 |
 | 草稿生成 | `ctx.tools.register()`（必要时 `ctx.llm` adapter） | tools | 复用现有 DeepSeek adapter 还是自建 |
 | 大纲 / 章节大纲 | tools + 领域 spec | tools / store | 单一文档 or 分章节实体；是否要版本历史 |
 | 世界地图 | tools + Web Client 节点 | tools / ui | 节点-边结构是否复用图模型 |
@@ -412,11 +422,11 @@ dsh --profile demo
 |---|---|---|---|
 | 1 | 包切分方向 | 水平（按角色，现状）vs 垂直（按领域） | 决定目录形态与版本策略；垂直切分下新增领域只动 1 包 |
 | 2 | 组合包是否自包含 | patch 内写入 storage 三行（建议）vs 依赖 profile | 决定 `dsh plugin add` 后能否直接跑 |
-| 3 | 领域 spec 拆分粒度 | 一域一 spec vs 单 spec 多 tables | 决定跨领域一致性与独立演进能力 |
+| 3 | 领域 spec 拆分粒度 | 一域一 spec vs 单 spec 多 tables | 决定跨领域一致性与独立演进能力；D4（多作品）在每作品一域下倾向多 tables，但本项仍独立待拍板 |
 | 4 | 领域 schema 演进策略 | 只加不改 + 版本单调 + 正文 `per-record`（建议） | 决定用户资产可迁移性 |
 | 5 | 测试归属 | 根 `tests/` vs 包级 `tests/` | 与 `rules/typescript.md`「测试放包级」冲突一处 |
 
-> 这些决策的执行顺序与阶段划分见 `docs/plans/implementation-steps.md`（草案，待放行）；该计划另有 D1/D2/D3 三个前置决策（UI 承载位置、客户端构建链、静态数据来源）。
+> 这些决策的执行顺序与阶段划分见 `docs/plans/2026-11-21-implementation-steps.md`（阶段 0 已放行）；该计划另有 D1/D2/D3 三个前置决策（UI 承载位置、客户端构建链、静态数据来源），以及 D4（多作品数据模型，见 `docs/decisions/2026-11-21-多作品数据模型.md`）。
 
 ### 11.3 已知技术债
 
