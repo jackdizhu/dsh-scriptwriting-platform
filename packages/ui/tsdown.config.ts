@@ -23,6 +23,11 @@ export default defineConfig({
   // 会把前两步产物删掉，故关闭；lib 的清理由 scripts/tsc.mjs 在链首完成。
   clean: false,
   external: EXTERNAL,
+  // 内联的 zrender/echarts 源码含 246 处 process.env.NODE_ENV；浏览器没有 process
+  // 全局，factory 执行时会抛 "process is not defined"（dsh-desktop web-boot 实测）。
+  // 必须用 define 全局替换为生产常量（仅 build 时生效，src 里的 React 判断不受影响），
+  // 顺带让开发期 assert/log 分支被常量折叠 + tree-shake。
+  define: { 'process.env.NODE_ENV': JSON.stringify('production') },
   outputOptions: {
     // harness 预设同样用 entryFileNames 固定为 .js（tsdown.client.ts:1135），
     // 否则 cjs 格式默认产出 client.cjs，与 exports["./client"] 不匹配。

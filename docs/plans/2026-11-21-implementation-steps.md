@@ -439,7 +439,7 @@ export function apply(_ctx: Context): void {}
 
 ### 3.6 Step 4：打包配置（决策 D2-A 的落地）
 
-`packages/ui/tsdown.config.ts` 的关键是三点：入口、外部依赖、产物契约（外加 Apache-2.0 的归属义务）。
+`packages/ui/tsdown.config.ts` 的关键是四点：入口、外部依赖、环境常量定义、产物契约（外加 Apache-2.0 的归属义务）。
 
 ```ts
 import { readFileSync } from 'node:fs'
@@ -460,6 +460,9 @@ export default defineConfig({
   dts: false,
   sourcemap: true,
   external: EXTERNAL,
+  // 内联的 zrender/echarts 含 246 处 process.env.NODE_ENV；浏览器无 process 全局。
+  // factory 执行即抛 "process is not defined"（dsh-desktop web-boot 实测）。
+  define: { 'process.env.NODE_ENV': JSON.stringify('production') },
   outputOptions: {
     banner: `window.__ModuleLoader__.load({ id: "dsh-scriptwriting-ui", factory: (require) => {\n${NOTICE}`,
     intro: 'var module = { exports: {} }; var exports = module.exports;',
@@ -470,8 +473,9 @@ export default defineConfig({
 
 对照 harness 预设的实际写法（`packages/client/tsdown.client.ts` 第 1148–1153 行）：banner 带包名、intro 造 `module`/`exports`、footer `return module.exports; } });`。harness 用独立的 `postBanner` 放许可注释，普通 tsdown 没有该钩子，所以这里把它并进 `banner` 字符串。
 
-三条不可违反的边界：
+四条不可违反的边界：
 
+- **必须 `define` 掉 `process.env.NODE_ENV`**。内联的 zrender/echarts 源码含约 246 处 `process.env.NODE_ENV`；浏览器没有 `process` 全局，factory 一执行就抛 `process is not defined`，dsh-desktop 报 `web boot: 1 entry did not activate`。`define: { 'process.env.NODE_ENV': '"production"' }` 全局替换成生产常量，顺带让 dev-only 的 assert/log 分支被常量折叠掉。
 - **`external` 只列 react 三件+`react-dom/client`**。把 `echarts` 加进 external 或在 `dsh.client.external` 里声明它，会让产物在运行时 `require('echarts')`——而页面模块表里没有这一项，直接抛错。
 - **不要给产物加 CSS 管线**：本期用到的 echarts / zrender 都不依赖外部样式表，自家样式走内联对象，因此不需要额外的 `css-as-text` 插件。真到需要第三方 CSS 时再补，不要预防性引入。
 - **许可归属不能省**：Apache-2.0 第 4(d) 条要求分发时保留 NOTICE。产物是单文件、会被拼进 combo 脚本，注释头是唯一稳定的携带位置。
@@ -669,7 +673,7 @@ export function apply(ctx: ClientContext): void {
 - [ ] 侧栏折叠成 rail（56px）时该行降级为纯图标
 - [ ] 三块视图由 ECharts 渲染（graph / custom series），无手写坐标的 SVG
 - [ ] 三块视图在浅色/深色主题下文字均清晰可读
-- [ ] 产物为 lazy-CJS 契约，无 ESM `import` 残留，无 Node 内建依赖
+- [ ] 产物为 lazy-CJS 契约，无 ESM `import` 残留，无 `process` / `Buffer` 等 Node 全局引用（浏览器无此全局）
 - [ ] `echarts` / `zrender` 已内联，产物中无 `require("echarts")`；`zrender` 未出现在 `dependencies`
 - [ ] Apache-2.0 NOTICE 已随产物携带（banner 注释块）
 - [ ] 反复开关 tab 后 ECharts 实例已 `dispose()`，无内存/监听累积
@@ -684,6 +688,7 @@ export function apply(ctx: ClientContext): void {
 | 风险 | 触发信号 | 处置 |
 |---|---|---|
 | `__ModuleLoader__.load` 契约写错 | 页面白屏，控制台报 `Cannot read properties of undefined (reading 'load')` 或 factory 未注册 | 对照 §3.6 的 banner/intro/footer 三行逐字核对 |
+| 产物残留 `process` 引用 | `web boot: 1 entry did not activate` + `dsh-scriptwriting-ui: import failed: process is not defined` | 确认 `tsdown.config.ts` 有 `define: { 'process.env.NODE_ENV': '"production"' }`；构建后 `grep -o 'process\.env' lib/client.js \| wc -l` 应为 0 |
 | 向未声明的 slot 注册 | 插件激活失败，报 slot 未声明 | 确认 `inject` 含 `sidebar-right`，且用 `ctx.slots.inject()` 而非直接 `register` |
 | React 被内联进产物 | 产物体积异常增大、出现两份 React 报 invalid hook call | 确认 `external` 含 `react` 与 `react/jsx-runtime` 两项 |
 | `echarts` 被当成外部依赖 | 运行时 `require("echarts")` 抛「模块表无法解析」 | `external` 保持只含 react 系；`dsh.client.external` 里不要写 echarts |
