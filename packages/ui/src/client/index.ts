@@ -13,6 +13,8 @@ import { Relations } from './panels/Relations.tsx'
 import { Timeline } from './panels/Timeline.tsx'
 import { PlatformIcon } from './entries/PlatformIcon.tsx'
 import { PlatformPage, type PlatformPageInjected } from './entries/PlatformPage.tsx'
+import { setService } from './store.ts'
+import { MockWorkbenchService } from './service/mock.ts'
 
 /** 主列面板 id：同时是 `main` 的 key 与 `sidebar.panellist` 的行 id。 */
 const PANEL_ID = 'scriptwriting' as MainPanelId
@@ -40,6 +42,10 @@ function currentKind(ctx: ClientContext): string | undefined {
  * @param ctx - 浏览器根上下文。
  */
 export function apply(ctx: ClientContext): void {
+  // D5 接缝：阶段 1.5 装 mock service；阶段 5 换 @Remote client service 时只改这一行。
+  // 组件经 store + useWorkbench 读快照，不认实现，故替换后组件零改动。
+  setService(new MockWorkbenchService())
+
   for (const tab of TABS) {
     ctx.effect(() => ctx.sidebarRightTabs.register({
       id: tab.id,

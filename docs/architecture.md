@@ -435,7 +435,7 @@ dsh --profile demo
 ### 11.3 已知技术债
 
 - `tools` 依赖 `store`（Consumer 依赖了非 Definition 的实现包）。
-- `ui` 缺 `dsh.client` 与 `./client` 导出，Web 节点能力为 0。
+- `ui` 已有 `dsh.client` 与 `./client` 导出、Web 能力 = 作品工作台 + 三视图（阶段 1/1.5）；数据仍是 mock service，待阶段 5 接真实 `@Remote` 服务。
 - bundle `apply()` 未实现，patch 未自包含。
 - 根 `tests/` 不在任何 tsconfig `include` 内。
 - 无 lint、无 CI、无 test runner。

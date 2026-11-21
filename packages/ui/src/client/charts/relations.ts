@@ -1,9 +1,10 @@
 /**
  * 人物关系 option（纯函数）：graph + force 力导向自动避让。
  * 关系类型用 lineStyle.type + 线宽区分，与地图共用 graph 元素模型。
+ * 阶段 1.5：数据由 service 快照注入，不再直接 import mock 常量。
  */
 import type { EChartsCoreOption } from 'echarts/core'
-import { characters, relations, type RelationKind } from '../mock/characters.ts'
+import type { RelationKind, RelationsData } from '../contract.ts'
 
 const STYLE: Record<RelationKind, { type: 'solid' | 'dashed' | 'dotted'; width: number }> = {
   ally: { type: 'solid', width: 2 },
@@ -11,7 +12,7 @@ const STYLE: Record<RelationKind, { type: 'solid' | 'dashed' | 'dotted'; width: 
   kin: { type: 'dotted', width: 3 },
 }
 
-export function relationsOption(): EChartsCoreOption {
+export function relationsOption(data: RelationsData): EChartsCoreOption {
   return {
     title: { text: '人物关系', subtext: '实线同盟 / 虚线敌对 / 点线亲缘' },
     tooltip: { trigger: 'item' },
@@ -31,14 +32,14 @@ export function relationsOption(): EChartsCoreOption {
           { name: '对立圈' },
           { name: '中立圈' },
         ],
-        data: characters.map(character => ({
+        data: data.characters.map(character => ({
           id: character.id,
           name: character.name,
           value: character.value,
           symbolSize: character.value,
           category: character.group,
         })),
-        links: relations.map(relation => ({
+        links: data.relations.map(relation => ({
           source: relation.source,
           target: relation.target,
           name: relation.label,

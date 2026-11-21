@@ -1,7 +1,7 @@
 # 实施步骤
 
-- 版本：1.5（2026-11-21）
-- 状态：**阶段 0 已放行、阶段 1 已完成**（D1/D2/D3 用户拍板，见 `docs/decisions/2026-11-21-{UI入口与承载位置,客户端构建链,静态数据来源}.md`）；**D4 多作品数据模型已拍板**（见 `docs/decisions/2026-11-21-多作品数据模型.md`）；**D5 多作品运行时约束已拍板**（状态同步 = Node `ctx` 服务 API + 浏览器单向展示、删除 = 软删、同开域上限 = 1，见 `docs/decisions/2026-11-21-多作品运行时约束.md`）。阶段 2 起按多作品模型推进；阶段 1 的作品入口扩展见 §3.13（待办）。本文件是执行计划，不是决策本身。
+- 版本：1.6（2026-11-21）
+- 状态：**阶段 0 已放行、阶段 1 已完成、阶段 1.5 已完成**（D1/D2/D3 用户拍板，见 `docs/decisions/2026-11-21-{UI入口与承载位置,客户端构建链,静态数据来源}.md`）；**D4 多作品数据模型已拍板**（见 `docs/decisions/2026-11-21-多作品数据模型.md`）；**D5 多作品运行时约束已拍板**（状态同步 = Node `ctx` 服务 API + 浏览器单向展示、删除 = 软删、同开域上限 = 1，见 `docs/decisions/2026-11-21-多作品运行时约束.md`）。阶段 1.5 已落地完整 UI 侧功能（作品工作台 + mock service，见 §3.13）；阶段 2 起按多作品模型推进。本文件是执行计划，不是决策本身。
 - 前置阅读：`AGENT.md` → `rules/agent-workflow.md` → `docs/architecture.md`
 
 > **本文档的定位**：把 `docs/architecture.md` 描述的「目标态」翻译成**可逐步执行、可验证**的动作序列。凡架构文档标注「设计建议（待确认）」的条目，这里同样不当作既成事实，一律标 `待确认`。
@@ -55,7 +55,7 @@
 |---|---|---|---|---|
 | 0 | 敲定 3 个阻塞项 | — | — | 用户对 §2 三项逐条答复 |
 | **1** | **UI 静态部分可点开、可看** | `ui`（+`bundle` 一行 patch） | 阶段 0 | §3.11 验收清单全绿（**已完成**，作品入口补作 §3.13） |
-| 1.5 | 作品入口扩展（静态） | `ui` | 1 + D4 | 作品列表/新建/切换可用（mock 多份），tab kind 不变 |
+| 1.5 | 完整 UI 侧功能：作品工作台 + mock service 接口层 | `ui` | 1 + D4/D5 | 作品列表/新建/切换/重命名/软删可用，三视图按当前作品联动，tab kind 不变（**已完成**） |
 | 2 | 领域类型与错误契约（含 `Work`/`WorkId`） | `core` | 阶段 0 + D4/D5 | `pnpm typecheck` 通过，类型被 3、4 引用 |
 | 3 | DomainSpec 声明：作品注册域 + 内容域模板（软删字段） | `store` | 阶段 2 + D4/D5 | `open()` 成功，坏记录行为符合 spec |
 | 4 | 模型可读写工具 + 作品管理工具 + `ctx` 服务 `@Remote` API | `tools` | 阶段 2 + D4/D5 | 工具在真实会话中可调用，README 三字段填全 |
@@ -705,21 +705,23 @@ export function apply(ctx: ClientContext): void {
 | 行 id 与 main key 不一致 | 行可点但主列空白 | 两处都用同一个 `PANEL_ID` 常量，不写字面量 |
 | 用户预期「再点关闭」落空 | 反馈「按钮关不掉」 | 在页面显眼处放「收起右侧面板」；文档与验收步骤 14 明确这是 β 的既有代价 |
 
-### 3.13 阶段 1 追加：多作品入口（D4，静态，仍用 mock）
+### 3.13 阶段 1.5：完整 UI 侧功能（D4/D5，mock service，已实施）
 
-D4（作品注册表 + 每作品一域，见 `docs/decisions/2026-11-21-多作品数据模型.md`）要求平台支持多个作品。阶段 1 的静态实现此前是单作品假设，需补一层作品入口——**本小步仍用 mock 数据，不接存储**，避免阻塞在 core/store 之前。
+D4（作品注册表 + 每作品一域）+ D5（单向同步 / 软删 / 单活跃域）要求平台支持多作品。阶段 1 的静态实现此前是单作品假设，本阶段补齐**完整 UI 侧功能**——作品工作台 + 接口层 + 三视图联动。仍用 mock service、不接存储，避免阻塞在 core/store 之前。
 
 | 项 | 内容 |
 |---|---|
-| 目标 | 用户能新建作品、在作品列表间切换、看到当前作品名；三视图按当前作品显示不同的 mock 数据 |
-| 数据 | `src/client/mock/works.ts` 提供 2–3 份作品元数据 + 每份对应的 world/characters/events（沿用 D3 同形约定，标 `TODO(阶段 5)`） |
-| UI 落点 | 主列 `PlatformPage` 顶部加作品选择器（列表 + 新建 + 重命名入口）；左栏行 `sidebar.panellist` 仍为单个「创作平台」，不再为每个作品加行（避免行数随作品增长） |
-| 状态 | 当前作品 id 由 `src/client/workState.ts` 在模块内存管理（静态阶段）；tab kind 固定不变，切换只换数据源——真源 `ui-sidebar-right/src/client/tab-registry.ts` 的 `register()` 无运行时 unregister |
-| 边界 | 不 import core/store/tools；不引入持久化；作品状态跨端同步已由 D5 拍板（Node `ctx` 服务 API + 浏览器单向展示），本小步的 `workState.ts` 是阶段 5 替换为该 API 调用的临时桩 |
-| 验证 | 切换作品后三个视图 mock 数据变化、标题显示当前作品名；`pnpm -C packages/ui build` 产物仍满足 lazy-CJS 契约 |
-| 退出 | 阶段 5 时 `workState.ts` 的 mock 切换替换为注册表域 + `activeWorkId` 同步，作品选择器保留 |
+| 目标 | 用户能新建/切换/重命名/软删作品、看到当前作品名与数据摘要；三视图按当前作品显示各自数据 |
+| 接口层 | `src/client/contract.ts`（`WorkbenchService` = D5 Node 服务的 UI 镜像：查询 + 命令 + `ObservableSnapshot`）、`store.ts`（单例容器）、`useWorkbench.ts`（`useSyncExternalStore` 订阅）、`service/mock.ts`（mock 实现：软删/activeWorkId 单例/换作品） |
+| 数据 | `src/client/mock/works.ts` 三份作品元数据 + 各自的 world/relations/timeline（沿用 D3 同形约定，标 `TODO(阶段 5)`） |
+| UI 落点 | 主列 `PlatformPage` = 完整工作台（作品列表/新建/切换/重命名/软删 + 三视图入口 + 数据摘要）；三面板订阅快照渲染当前作品数据；左栏行 `sidebar.panellist` 仍为单个「创作平台」，不随作品增长 |
+| **实现偏离** | 原计划用 `workState.ts` 模块内存桩；实际按 D5 提前落地**接口层**（`WorkbenchService` + 快照订阅），比原桩更贴合「浏览器只展示」的终态——阶段 5 只需换 `setService()` 一行，组件零改动。此为有意升级，非遗漏 |
+| 单向数据流 | 读 = `useWorkbench()` 快照；写 = `getService().<命令>()`；组件不 import mock、不改状态。真源 `ui-sidebar-right/tab-registry.ts` 的 `register()` 无 unregister，tab kind 固定、切换只换数据 |
+| 边界 | 不 import core/store/tools；不引入持久化；mock 内遵守 D5 语义（软删不清数据、同开内容域上限 1） |
+| 验证 | 切换/新建/删除后三视图与标题随之变化；软删作品后数据仍在；`pnpm typecheck` + `pnpm build` 通过，产物满足 lazy-CJS 契约（process.env=0、无 ESM 残留、load/NOTICE 正常） |
+| 退出 | 阶段 5 时 `src/client/index.ts` 的 `setService(new MockWorkbenchService())` 换成 `@Remote` client service，作品选择器与三面板保留 |
 
-**为什么现在做**：作品入口是纯 UI 层、无上游依赖，可立即落地；若拖到阶段 5，作品选择器与视图取数会同时改动，验收面翻倍。此小步不改变阶段 2/3/4 的任何产出，只让阶段 5 的替换点更清晰。
+**为什么现在做**：完整 UI 是纯浏览器层、无上游依赖，可立即落地；接口层提前到位让阶段 5 的替换收敛到一行，验收面大幅缩小。此阶段不改变阶段 2/3/4 的任何产出。
 
 ---
 
@@ -772,7 +774,7 @@ D4（作品注册表 + 每作品一域，见 `docs/decisions/2026-11-21-多作�
 | 项 | 内容 |
 |---|---|
 | 目标 | 三块面板读领域存储，刷新不丢；**切换作品后数据随之变化，当前作品持久化** |
-| 做法 | 保留 `PanelShell` 与视图组件，把 `mock/*` 换成 store 查询；数据获取放客户端 service 或 Remote，**不**在组件里直接取上下文；§3.13 的作品选择器接注册表域，`workState.ts` 的 mock 切换替换为 `activeWorkId` 同步 |
+| 做法 | 保留 `PlatformPage` / `PanelShell` 与视图组件；**只需把阶段 1.5 的 `setService(new MockWorkbenchService())` 换成 D5 的 `@Remote` client service**（同一 `WorkbenchService` 接口），组件零改动；`mock/works.ts` 删除，作品数据来自注册表域 + `activeWorkId`，`@Remote` 的 `getView`/命令方法落到真实领域存储 |
 | 已定输入 | D5：`ctx.provide('scriptwritingWorks', service)` + `@Remote` 暴露 `listWorks`/`getActiveWork`/`getView` 查询与 `createWork`/`switchWork`/`renameWork`/`deleteWork` 命令；浏览器只发命令 + 查状态 + 渲染，不写权威状态；写后失效信号推浏览器触发重查（详见 `docs/decisions/2026-11-21-多作品运行时约束.md`） |
 | 验证 | 修改数据后刷新面板一致；切换作品后三视图变化且刷新保留当前作品；模型写入后浏览器重查可见；删除作品后数据仍在（软删）；断网/服务缺失时降级到空态而非崩溃 |
 | 退出 | mock 目录删除，`grep -r "mock/" packages/ui/src` 无命中；作品切换端到端可用 |
@@ -840,3 +842,4 @@ D1/D2/D3（阶段 0 前置）、D4（多作品数据模型）、D5（多作品�
 | 2026-11-21 | 1.3：左栏入口定为 β（`sidebar.panellist` 行 + `main` 主列面板），同步 §2.1.1/§2.1.2/§3.2/§3.8/§3.10/DoD/风险，并记录「重复点击不能关闭」的已知代价 |
 | 2026-11-21 | 1.4：D4 多作品数据模型拍板（作品注册表 + 每作品一域）；新增 §3.13 阶段 1 作品入口静态扩展、阶段 1.5；阶段 2–5 产出按 `Work`/作品注册域/作品管理工具/按作品取数对齐；记录三项 D4 遗留待确认 |
 | 2026-11-21 | 1.5：D5 多作品运行时约束拍板（状态同步 = Node `ctx` 服务 `@Remote` API + 浏览器单向展示、删除 = 软删、同开内容域上限 = 1）；D4 三项遗留 closure；阶段 2–5 前置与产出同步 D5，阶段 5 决策项改为已定输入 |
+| 2026-11-21 | 1.6：阶段 1.5 实施完成——完整 UI 侧功能落地（作品工作台 + `WorkbenchService` 接口层 + 三份 mock 作品 + 三视图联动），按 D5 单向数据流；§3.13 重写为已实施并记录对原 `workState.ts` 桩的有意升级；阶段 5 替换为 `setService()` 一行 |
